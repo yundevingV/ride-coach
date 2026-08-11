@@ -1,0 +1,15 @@
+{
+  "riderKg": 74,
+  "bikeKg": 10,
+  "weather": {
+    "windKmh": 14,
+    "windFromDeg": 270,
+    "precipMm": 0,
+    "tempC": 27
+  },
+  "points": [
+    { "vMps": 6.5, "grade": 0.2, "watts": 101, "bearingDeg": 90 },
+    { "vMps": 5.0, "grade": 5.0, "watts": 180, "bearingDeg": 180 },
+    { "vMps": 7.0, "grade": -1.0, "watts": 85, "bearingDeg": 45 }
+  ]
+}
