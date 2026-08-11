@@ -159,8 +159,9 @@ function formatMarkdown(out, lang) {
       ? '_Estimated power ±10~15W. Recorded W = stream avg in segment window._'
       : '_추정 파워 ±10~15W. 기록 파워 = 세그먼트 구간 streams 평균._',
     '',
-    lang === 'en' ? '**Reading:** corrected W > recorded W → headwind; corrected W < recorded W → tailwind.'
-      : '**읽는 법:** 보정 > 기록 → 역풍 구간 · 보정 < 기록 → 순풍 구간',
+    lang === 'en'
+      ? '**Reading:** corrected W > recorded W → wind-adjusted effort (headwind or tailwind assist removed). Signed wind Δ: + headwind · − tailwind.'
+      : '**읽는 법:** 보정 > 기록 → 바람 영향 제거 후 실제 노력(역풍·순풍 모두). 바람 보정 표시: + 역풍 · − 순풍',
   );
   return lines.join('\n');
 }

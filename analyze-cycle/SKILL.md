@@ -117,7 +117,7 @@ Ride shorter than window → skip that row (script auto-filters).
 
 ### 해석
 - 2회전/랩 시간 diff (if applicable)
-- 보정 > 기록 → 역풍 · 보정 < 기록 → 순풍
+- 보정 > 기록 → wind-adjusted effort (+ headwind / − tailwind assist removed). Signed wind Δ: + headwind · − tailwind
 - 한 줄 결론 + 추정 파워 ±10~15W
 ```
 
