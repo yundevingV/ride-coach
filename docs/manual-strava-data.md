@@ -1,19 +1,21 @@
-# MCP 없이 Strava 데이터 쓰기
+# Using Strava Data Without MCP
 
-ChatGPT·Gemini 등 **Strava MCP가 없는 환경**용.
+**한국어:** [manual-strava-data.ko.md](manual-strava-data.ko.md)
 
-## 필요한 데이터
+For **environments without Strava MCP** — ChatGPT, Gemini, etc.
 
-### 활동 메타 (최소)
+## Required data
+
+### Activity meta (minimum)
 
 - `start_date_local` (KST)
 - `start_latlng` [lat, lng]
 - `average_watts` / `weighted_average_watts`
-- `segment_efforts` (세그먼트 분석 시)
+- `segment_efforts` (for segment analysis)
 
-### streams JSON (풍속 보정 시)
+### streams JSON (for wind correction)
 
-`get_activity_streams`와 동일 필드:
+Same fields as `get_activity_streams`:
 
 ```json
 {
@@ -26,11 +28,11 @@ ChatGPT·Gemini 등 **Strava MCP가 없는 환경**용.
 
 Strava API v3: `GET /activities/{id}/streams?keys=latlng,velocity_smooth,grade_smooth,watts&key_by_type=true`
 
-## AI에게 넘기는 방법
+## How to pass to AI
 
-1. 레포 `prompts/system-prompt-ko.md` + `docs/용어.md` 업로드
-2. streams JSON 파일 또는 활동 ID·수동 표 붙여넣기
-3. 로컬에서 스크립트 실행 후 결과만 붙여넣기:
+1. Upload repo `prompts/system-prompt.md` + `docs/glossary.md`
+2. Paste streams JSON or activity ID / manual table
+3. Or run script locally and paste results:
 
 ```bash
 node scripts/correct-power.mjs \
@@ -40,20 +42,20 @@ node scripts/correct-power.mjs \
   --streams ./my-streams.json
 ```
 
-## 세그먼트만 (streams 불필요)
+## Segments only (no streams)
 
-Strava 앱·웹에서 세그먼트 시간·경사를 복사하거나,  
-API로 `segment_efforts` JSON을 AI에 제공.
+Copy segment time/grade from Strava app/web, or  
+provide `segment_efforts` JSON to AI.
 
-풍속 보정 없이 **시간·경사** 분석은 streams 없이도 가능.
+**Time and grade** analysis works without streams (no wind correction).
 
-## Strava API 직접 (개발자)
+## Strava API directly (developers)
 
-1. https://www.strava.com/settings/api 에서 앱 생성
-2. OAuth로 access token 발급
-3. curl로 activities / streams 조회
+1. Create app at https://www.strava.com/settings/api
+2. OAuth access token
+3. curl activities / streams
 
-이 레포는 토큰 관리 코드를 포함하지 않습니다.  
-개인 스크립트 또는 별도 MCP 서버 구축 시 참고.
+This repo does not include token management.  
+Use for personal scripts or separate MCP server.
 
-MCP 설정이 가능하면 → [setup-strava-mcp.md](./setup-strava-mcp.md) 권장.
+If MCP is possible → prefer [setup-strava-mcp.md](./setup-strava-mcp.md).

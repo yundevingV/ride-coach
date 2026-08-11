@@ -1,19 +1,21 @@
-# AI 플랫폼별 설치
+# Platform Setup
 
-## 공통: 레포 클론
+**한국어:** [platforms.ko.md](platforms.ko.md)
+
+## Common: clone repo
 
 ```bash
-git clone https://github.com/YOUR_USER/ride-coach.git
+git clone https://github.com/yundevingV/ride-coach.git
 cd ride-coach
 ```
 
-온보딩: [getting-started.md](./getting-started.md)
+Onboarding: [getting-started.md](./getting-started.md)
 
 ---
 
-## Cursor (권장 — Strava MCP + 스킬)
+## Cursor (recommended — Strava MCP + skills)
 
-### 1. 스킬
+### 1. Skills
 
 ```bash
 mkdir -p ~/.cursor/skills
@@ -24,7 +26,7 @@ ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
 
 ### 2. Strava MCP
 
-[setup-strava-mcp.md](./setup-strava-mcp.md) 전체 따라하기.
+Follow [setup-strava-mcp.md](./setup-strava-mcp.md) fully.
 
 ---
 
@@ -41,22 +43,22 @@ ln -sf "$(pwd)/weather-power" ~/.claude/skills/weather-power
 
 ## ChatGPT / Gemini
 
-`README.md`, `prompts/system-prompt-ko.md`, `docs/segment-analysis.md` 업로드.
+Upload `README.md`, `prompts/system-prompt.md`, `docs/segment-analysis.md`.
 
 ---
 
 ## Windsurf / Codex
 
-루트 `AGENTS.md` 자동 인식.
+Root `AGENTS.md` is auto-detected.
 
 ---
 
-## 스킬 역할
+## Skill roles
 
-| 스킬 | 용도 |
-|------|------|
-| `ride-coach` | 허브·라이딩 코치 |
-| `analyze-cycle` | 세그먼트·코스·FTP |
-| `weather-power` | 무풍 등가 파워 |
+| Skill | Role |
+|-------|------|
+| `ride-coach` | Hub, cycling coach |
+| `analyze-cycle` | Segments, courses, FTP |
+| `weather-power` | Zero-wind equivalent power |
 
-세 개 모두 링크 권장.
+Link all three recommended.

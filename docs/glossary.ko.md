@@ -1,5 +1,7 @@
 # 용어집 (ride-coach)
 
+**English:** [glossary.md](glossary.md)
+
 AI가 사용자에게 결과를 설명할 때 **아래 한글 표기를 사용**합니다.
 
 ## 파워

@@ -1,136 +1,138 @@
-# 세그먼트 분석 가이드
+# Segment Analysis Guide
 
-`analyze-cycle` 스킬 + Strava MCP로 **세그먼트·업힐·PR**을 분석하는 방법.
+**한국어:** [segment-analysis.ko.md](segment-analysis.ko.md)
 
-## 사전 조건
+How to analyze **segments, climbs, and PRs** with the `analyze-cycle` skill + Strava MCP.
 
-- [Strava MCP 설정](./setup-strava-mcp.md) 완료
-- 스킬: `analyze-cycle` (+ 파워 보정 시 `weather-power`)
+## Prerequisites
 
-## 핵심 가정
+- [Strava MCP setup](./setup-strava-mcp.md) complete
+- Skills: `analyze-cycle` (+ `weather-power` for power correction)
 
-- Strava **추정 파워** (속도계). 실측 파워미터 아닐 수 있음.
-- **세그먼트 시간 > 파워** — W가 모순되면 시간을 믿음.
-- 기록 파워만으로 PR/ FTP 결론 **금지** → 무풍 등가 파워 또는 시간.
+## Core assumptions
 
----
-
-## 워크플로
-
-```
-1. 요청 분류 (세그먼트 / 코스 / FTP / 날씨 비교)
-2. Strava 데이터 수집
-3. (파워 분석 시) Open-Meteo 날씨
-4. (정밀 시) weather-power → 무풍 등가 파워
-5. 세그먼트 시간과 교차 검증
-6. 표 + 한 줄 결론
-```
+- Strava **estimated power** (speedometer). May not be a power meter.
+- **Segment time > power** — trust time when W contradicts.
+- No PR/FTP conclusions from recorded power alone → zero-wind power or time.
 
 ---
 
-## 요청 유형 → MCP 도구
-
-| 하고 싶은 것 | MCP 도구 |
-|--------------|----------|
-| 지역 세그먼트 찾기 | `explore_segments` |
-| 세그먼트 스펙·PR | `get_segment_details` |
-| 내 세그먼트 기록 추이 | `list_my_segment_efforts` |
-| 라이딩 안 세그먼트 | `get_activity_details` → `segment_efforts` |
-| 상세 파워·GPS | `get_activity_streams` |
-| 최근 라이딩 목록 | `get_recent_activities` |
-| 몸무게·FTP | `get_athlete_profile` |
-
----
-
-## 예시 프롬프트
-
-### 특정 라이딩 세그먼트
+## Workflow
 
 ```
-activity_id {ID} 세그먼트 effort 전부 표로.
-컬럼: 세그먼트명, 시간, 경사, 기록 파워, PR 순위(pr_rank 있으면)
-```
-
-### 업힌만
-
-```
-최근 라이딩에서 경사 3% 이상 세그먼트만.
-시간 비교 가능하게 정렬.
-```
-
-### 세그먼트 PR 추이
-
-```
-세그먼트 ID {SEG_ID} list_my_segment_efforts로
-과거 기록 시간 추이 + 날씨는 각 활동 날짜만.
-```
-
-### PR vs 오늘 (풀 분석)
-
-```
-세그먼트 {이름}:
-- PR 날 vs 이번: 시간, 기록 파워, 무풍 등가 파워
-- 날씨 차이
-- 한 줄: 체력/컨디션/날씨 해석
+1. Classify request (segment / course / FTP / weather compare)
+2. Collect Strava data
+3. (Power analysis) Open-Meteo weather
+4. (Precise) weather-power → zero-wind equivalent power
+5. Cross-validate with segment time
+6. Table + one-line conclusion
 ```
 
 ---
 
-## 출력 템플릿 (세그먼트)
+## Request type → MCP tools
+
+| Goal | MCP tool |
+|------|----------|
+| Find local segments | `explore_segments` |
+| Segment spec & PR | `get_segment_details` |
+| My segment history | `list_my_segment_efforts` |
+| Segments in a ride | `get_activity_details` → `segment_efforts` |
+| Detailed power & GPS | `get_activity_streams` |
+| Recent rides | `get_recent_activities` |
+| Weight & FTP | `get_athlete_profile` |
+
+---
+
+## Example prompts
+
+### Segments on a specific ride
+
+```
+activity_id {ID} — all segment efforts in a table.
+Columns: name, time, grade, recorded power, PR rank (if pr_rank exists)
+```
+
+### Climbs only
+
+```
+From my recent ride, segments with grade ≥ 3%.
+Sort for time comparison.
+```
+
+### Segment PR trend
+
+```
+Segment ID {SEG_ID} — list_my_segment_efforts for time trend.
+Weather: activity dates only.
+```
+
+### PR vs today (full analysis)
+
+```
+Segment {name}:
+- PR day vs this ride: time, recorded power, zero-wind power
+- Weather difference
+- One line: fitness/conditions/weather interpretation
+```
+
+---
+
+## Output template (segment)
 
 ```markdown
-## [세그먼트명]
+## [Segment name]
 
-| 거리 | 상승 | 경사 | 이번 시간 | PR | 기록 파워 | 무풍 등가 파워 |
-|------|------|------|-----------|-----|-----------|----------------|
+| distance | climb | grade | this time | PR | recorded W | zero-wind W |
+|----------|-------|-------|-----------|-----|------------|-------------|
 
-- 신뢰도: 업힐 / 평지
-- 한 줄 결론
-- 한계: 추정 파워 ±10~15W
+- Confidence: climb / flat
+- One-line conclusion
+- Limit: estimated power ±10~15W
 ```
 
 ---
 
-## 날씨·파워 보정
+## Weather & power correction
 
-정밀 풍속 보정 → **weather-power** 스킬 (`scripts/correct-power.mjs`).
+Precise wind correction → **weather-power** skill (`scripts/correct-power.mjs`).
 
-| 한글 | 의미 |
-|------|------|
-| 기록 파워 | Strava 표시 W |
-| 무풍 등가 파워 | 바람 0 환산 W |
-| 바람 보정 | 역풍 + / 순풍 − |
+| Korean (user) | Meaning |
+|---------------|---------|
+| 기록 파워 | Strava displayed W |
+| 무풍 등가 파워 | Zero-wind equivalent W |
+| 바람 보정 | Headwind + / tailwind − |
 
-MCP 없이 휴리스틱만 쓸 때는 `analyze-cycle/SKILL.md` 내부 표 참고.
-
----
-
-## FTP 추정 (추정 파워 환경)
-
-- 평지 20분 기록 파워 → FTP **금지**
-- 업힐 3~5분 **무풍 등가 파워** → FTP 110~120% 역산 (범위)
-- 결론에 **±10~15W** 오차 명시
+Heuristic only (no MCP/script) → `analyze-cycle/SKILL.md` internal table.
 
 ---
 
-## 훈련 목표 (W 존 대신)
+## FTP estimate (estimated power)
 
-| 지표 | 예시 |
-|------|------|
-| 세그먼트 시간 | 3:33 → 3:28 |
-| RPE | Z2 4~5, 인터벌 7~8 |
-| 보정 파워 (업힐) | 건조한 날 기준선 대비 |
-| 회차 페이스 | 마지막 회차 급락 없음 |
+- Flat 20min recorded W → FTP **forbidden**
+- Climb 3~5min **zero-wind power** → back-calc FTP 110~120% (range)
+- State **±10~15W** error in conclusion
 
 ---
 
-## 자주 하는 실수
+## Training goals (instead of W zones)
 
-| 실수 | 올바른 접근 |
-|------|-------------|
-| 역풍 날 PR과 기록 파워만 비교 | 무풍 등가 + **시간** |
-| 프로필 체중만 속도계에 입력 | 몸+바이크 합인지 확인 |
-| latlng 없는 활동 풍속 보정 | 시간 위주, 보정 신뢰도 낮음 명시 |
-| 평지 W로 FTP | 업힐 보정 W만 |
+| Metric | Example |
+|--------|---------|
+| Segment time | 3:33 → 3:28 |
+| RPE | Z2 4~5, intervals 7~8 |
+| Corrected power (climb) | vs dry-day baseline |
+| Lap pace | No crash on final lap |
 
-스킬 원문: `analyze-cycle/SKILL.md`
+---
+
+## Common mistakes
+
+| Mistake | Correct approach |
+|---------|-------------------|
+| PR on headwind day vs recorded W only | Zero-wind + **time** |
+| Profile weight only in speedometer | Confirm body+bike total |
+| Wind correction without latlng | Time-first, low confidence stated |
+| FTP from flat W | Uphill corrected W only |
+
+Skill source: `analyze-cycle/SKILL.md`

@@ -1,5 +1,7 @@
 # ChatGPT / Gemini / Copilot용 시스템 프롬프트
 
+**English:** [system-prompt.md](system-prompt.md)
+
 아래 블록을 프로젝트 지침·커스텀 프롬프트·지식 파일에 붙여넣기.
 
 ---
@@ -43,4 +45,4 @@
 
 레포: ride-coach
 
-설치: docs/getting-started.md · Strava MCP: docs/setup-strava-mcp.md
+설치: docs/getting-started.ko.md · Strava MCP: docs/setup-strava-mcp.ko.md

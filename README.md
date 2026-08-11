@@ -1,21 +1,17 @@
-# ride-coach
+# Ride Coach Agent Skills
 
-**사이클링 AI 코치** — Strava + Open-Meteo로 세그먼트·코스·풍속 보정 파워 분석.
+**한국어:** [README.ko.md](README.ko.md)
 
-| 스킬 | 역할 |
-|------|------|
-| **ride-coach** | 허브 (이 레포 진입점) |
-| **analyze-cycle** | 세그먼트·코스·FTP·훈련 |
-| **weather-power** | 무풍 등가 파워 (풍속·노면 보정) |
+Agent skills for **ride-coach** — a cycling AI coach that analyzes Strava segments, courses, and **wind-corrected power** (무풍 등가 파워) using Open-Meteo weather data. Every power correction supports structured JSON output, and the built-in skill system lets AI agents discover and use all capabilities automatically.
 
-> Strava **추정 파워** 기준. 오차 **±10~15W**.
+> Strava **estimated power** (추정 파워) basis. Typical error **±10~15W**.
 
----
+## AI Integration
 
-## 🚀 빠른 시작
+Install as **Agent Skills** so your LLM can discover all capabilities:
 
 ```bash
-git clone https://github.com/YOUR_USER/ride-coach.git
+git clone https://github.com/yundevingV/ride-coach.git
 cd ride-coach
 
 mkdir -p ~/.cursor/skills
@@ -24,98 +20,201 @@ ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
 ```
 
-**필수:** [Strava MCP 설정](docs/setup-strava-mcp.md) → OAuth 완료.
+**Required:** [Strava MCP + OAuth](docs/setup-strava-mcp.md) — without it, agents cannot fetch your activities.
 
-전체 온보딩: [docs/getting-started.md](docs/getting-started.md)
-
-### 첫 요청
+In Cursor chat, invoke skills with slash commands or natural language:
 
 ```
-ride-coach: 최근 라이딩 세그먼트 상위 5개 정리해줘
+/ride-coach 최근 라이딩 세그먼트 상위 5개 정리해줘
+/weather-power 어제 라이딩 무풍 등가 파워 계산해줘
+/analyze-cycle PR 세그먼트와 이번 라이딩 비교해줘
 ```
 
-```
-라이딩코치: 어제 라이딩 무풍 등가 파워 계산해줘
-```
-
----
-
-## 문서
-
-| 문서 | 내용 |
-|------|------|
-| [getting-started.md](docs/getting-started.md) | 5분 온보딩 |
-| [setup-strava-mcp.md](docs/setup-strava-mcp.md) | **MCP 설치·OAuth** |
-| [segment-analysis.md](docs/segment-analysis.md) | 세그먼트·PR |
-| [용어.md](docs/용어.md) | 한글 용어 |
-| [manual-strava-data.md](docs/manual-strava-data.md) | MCP 없을 때 |
-| [platforms.md](docs/platforms.md) | ChatGPT·Claude 등 |
-
----
-
-## 용어
-
-| 영문 (내부) | 한글 |
-|-------------|------|
-| raw W | **기록 파워(W)** |
-| zero-wind W | **무풍 등가 파워(W)** |
-| windDeltaW | **바람 보정(W)** |
-
----
-
-## 요구 사항
-
-- **Strava MCP** — [설정](docs/setup-strava-mcp.md)
-- Node.js 18+
-- Open-Meteo (키 불필요)
+Or install the power-correction script only:
 
 ```bash
+npm install -g .   # exposes weather-power / ride-coach-power CLI
+```
+
+## Features
+
+- **Segments** — Explore, rank, and compare segment efforts. PR history, climb grade, elapsed time (primary metric), estimated power with confidence by terrain.
+- **Courses** — Analyze recent rides, segment efforts on a course, lap comparisons, and course-specific trends.
+- **Weather Power** — Wind and surface correction on Strava estimated power. Headwind/tailwind delta, wet-road Crr adjustment, **zero-wind equivalent power** (무풍 등가 파워).
+- **PR Comparison** — Cross-validate segment time + weather + zero-wind power between PR day and today. Segment time always wins on contradictions.
+- **FTP & Training** — FTP estimate from uphill zero-wind power (not flat raw W). Weekly training roadmap suggestions.
+- **Weather** — Open-Meteo Archive API hourly data (KST). wttr.in fallback. Multi-hour rides averaged at start/mid/end.
+
+## Quick Start
+
+```bash
+# 1. Clone + link skills (see AI Integration above)
+
+# 2. Configure Strava MCP in ~/.cursor/mcp.json
+#    → docs/setup-strava-mcp.md
+
+# 3. Verify connection (in Cursor Agent chat)
+Strava MCP health 확인하고, 최근 라이딩 3개 요약해줘
+
+# 4. Segment analysis
+/analyze-cycle 최근 라이딩 세그먼트 effort 상위 5개 표로 정리해줘
+
+# 5. Wind-corrected power (preview with sample data)
+node scripts/correct-power.mjs --format json < examples/sample-input.json
+
+# 6. Full pipeline (streams + weather)
 node scripts/correct-power.mjs \
   --lat 37.46 --lng 126.70 \
   --date 2026-08-10 --hour 20 \
   --rider 74 --bike 10 \
-  --streams ./streams.json
+  --streams ./streams.json \
+  --format json
 ```
 
----
+Full onboarding: [docs/getting-started.md](docs/getting-started.md)
 
-## Strava MCP (`~/.cursor/mcp.json`)
+## Skills
 
-```json
-{
-  "mcpServers": {
-    "strava": {
-      "url": "https://strava-mcp.mikekeefe.workers.dev/mcp"
-    }
-  }
-}
+| Skill | Slash / trigger | Description |
+| ----- | --------------- | ----------- |
+| `ride-coach` | `/ride-coach`, "라이딩코치" | Hub — routes to analyze-cycle or weather-power |
+| `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | Segments, courses, FTP, training roadmap |
+| `weather-power` | `/weather-power`, "무풍 등가 파워" | Wind + surface → zero-wind equivalent power |
+
+## Strava MCP Tools
+
+Read-only. Configure in `~/.cursor/mcp.json` (Cursor shows as `user-strava`).
+
+| Tool | Description |
+| ---- | ----------- |
+| `health` | Connection, rate limit, cache status |
+| `get_athlete_profile` | Weight, FTP |
+| `get_recent_activities` | Recent ride list |
+| `get_activity_details` | Segment efforts, start time, coords, recorded power |
+| `get_activity_streams` | GPS, speed, grade, watts (required for wind correction) |
+| `get_segment_details` | Distance, grade, PR |
+| `explore_segments` | Search segments by area |
+| `list_my_segment_efforts` | Past efforts on a segment |
+| `get_athlete_stats` | Weekly / yearly stats |
+| `get_segment_effort_streams` | Streams for a single segment effort |
+| `list_routes` / `get_route_details` | Saved routes |
+| `get_activity_laps` | Lap splits |
+| `get_athlete_best_efforts` | Best efforts by distance |
+
+Setup guide: [docs/setup-strava-mcp.md](docs/setup-strava-mcp.md)
+
+## Power Correction CLI
+
+`scripts/correct-power.mjs` — physics model aligned with cycling wattage calculators (CdA, Crr, chain loss).
+
+```bash
+# stdin JSON (see examples/sample-input.json)
+node scripts/correct-power.mjs --format json < examples/sample-input.json
+
+# Strava streams file + Open-Meteo weather
+node scripts/correct-power.mjs \
+  --lat <lat> --lng <lng> \
+  --date YYYY-MM-DD --hour <KST hour> \
+  --rider <kg> --bike <kg> \
+  --streams <path-to-streams.json> \
+  --format markdown    # default: Korean markdown table
+  --format json        # structured output
+
+# Weather only (no streams)
+node scripts/correct-power.mjs --lat 37.46 --lng 126.70 --date 2026-08-10 --hour 20
 ```
 
-Cursor **Connect** → `user-strava` ready 확인.
+| Flag | Description |
+| ---- | ----------- |
+| `--lat`, `--lng` | Location for Open-Meteo |
+| `--date` | Ride date (`YYYY-MM-DD`) |
+| `--hour` | KST hour (0–23) |
+| `--rider` | Rider weight (kg), default 74 |
+| `--bike` | Bike + gear weight (kg), default 10 |
+| `--streams` | Strava streams JSON (`latlng`, `velocity_smooth`, `grade_smooth`, `watts`) |
+| `--format` | `markdown` (default, Korean) or `json` |
 
----
+npm scripts:
 
-## 레포 구조
+```bash
+npm run correct -- --format json < examples/sample-input.json
+npm run example
+```
+
+## Terminology (user-facing Korean)
+
+Agents respond in Korean. Internal JSON keys stay English.
+
+| Internal (JSON) | User-facing |
+| ----------------- | ----------- |
+| raw W, rawAvgW | **기록 파워(W)** — Strava displayed value |
+| zeroWindW | **무풍 등가 파워(W)** |
+| windDeltaW | **바람 보정(W)** (+ headwind / − tailwind) |
+| surfaceDeltaW | **노면 보정(W)** |
+| headwindPct | **역풍 구간(%)** |
+
+Full glossary: [docs/glossary.md](docs/glossary.md)
+
+## Analysis Principles
+
+Priority order — agents follow this on every analysis:
+
+1. **Segment time** — most reliable
+2. **Zero-wind equivalent power** — weather-power skill
+3. **Recorded power alone** — do not compare across rides without correction
+4. Flat raw W → FTP back-calculation — forbidden
+
+Terrain confidence for estimated power:
+
+| Terrain | Confidence | Use |
+| ------- | ---------- | --- |
+| Climb 3%+ | Medium–High | Zero-wind power OK |
+| Rolling | Medium | Time first |
+| Flat | Low | Recorded power reference only |
+| Downhill | Ignore | Exclude from W analysis |
+
+Weight note: Strava profile is usually **body only**. Speedometer device field is often **body + bike + gear**. Adjust `--rider` / `--bike` if uphill recorded power looks too low.
+
+## PR Comparison (Full Package)
+
+Combine `analyze-cycle` + `weather-power` in one request:
+
+```
+PR 세그먼트와 이번 라이딩 비교:
+- 세그먼트 시간 (우선)
+- 날씨 (기온·풍속·풍향)
+- 무풍 등가 파워
+한 줄 결론 + 오차 범위
+```
+
+## Manual Data (No MCP)
+
+If Strava MCP is unavailable: [docs/manual-strava-data.md](docs/manual-strava-data.md)
+
+## Docs
+
+| Document | Content |
+| -------- | ------- |
+| [getting-started.md](docs/getting-started.md) | 5-minute onboarding |
+| [setup-strava-mcp.md](docs/setup-strava-mcp.md) | **MCP install + OAuth** |
+| [segment-analysis.md](docs/segment-analysis.md) | Segments, PR, FTP workflow |
+| [glossary.md](docs/glossary.md) | Terminology |
+| [manual-strava-data.md](docs/manual-strava-data.md) | Without MCP |
+| [platforms.md](docs/platforms.md) | ChatGPT, Claude, Windsurf |
+
+## Repo Structure
 
 ```
 ride-coach/
-├── SKILL.md                 # ride-coach (허브)
-├── analyze-cycle/SKILL.md   # 세그먼트·코스
-├── weather-power/SKILL.md   # 무풍 등가 파워
+├── SKILL.md                 # ride-coach (hub)
+├── analyze-cycle/SKILL.md   # segments, courses, FTP
+├── weather-power/SKILL.md   # zero-wind equivalent power
 ├── scripts/correct-power.mjs
+├── examples/sample-input.json
 ├── docs/
 └── prompts/
 ```
 
----
-
-## 분석 원칙
-
-1. 세그먼트 **시간** 최우선
-2. **무풍 등가 파워**
-3. 기록 파워 단독 비교 금지
-4. read-only
-
-## 기여 · 라이선스
+## Contributing · License
 
 [CONTRIBUTING.md](CONTRIBUTING.md) · MIT

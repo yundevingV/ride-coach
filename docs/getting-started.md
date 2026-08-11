@@ -1,22 +1,24 @@
-# 시작하기 — 5분 온보딩
+# Getting Started — 5-Minute Onboarding
 
-Strava + AI로 **세그먼트 분석·풍속 보정 파워**를 쓰는 최소 경로.
+**한국어:** [getting-started.ko.md](getting-started.ko.md)
 
-## 체크리스트
+Minimum path to use **segment analysis and wind-corrected power** with Strava + AI.
+
+## Checklist
 
 ```
-[ ] 1. git clone + 스킬 링크
-[ ] 2. Strava MCP 연결     → setup-strava-mcp.md
+[ ] 1. git clone + skill links
+[ ] 2. Strava MCP connection     → setup-strava-mcp.md
 [ ] 3. Node.js 18+
-[ ] 4. 에이전트에게 테스트 요청
+[ ] 4. Test request to agent
 ```
 
 ---
 
-## 1. 클론 & 스킬
+## 1. Clone & skills
 
 ```bash
-git clone https://github.com/YOUR_USER/ride-coach.git
+git clone https://github.com/yundevingV/ride-coach.git
 cd ride-coach
 
 mkdir -p ~/.cursor/skills
@@ -25,93 +27,93 @@ ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
 ```
 
-**Strava MCP** → [setup-strava-mcp.md](./setup-strava-mcp.md) **필수**.
+**Strava MCP** → [setup-strava-mcp.md](./setup-strava-mcp.md) **required**.
 
 ---
 
-## 2. Node.js (풍속 보정 스크립트)
+## 2. Node.js (power correction script)
 
 ```bash
-node -v   # v18 이상
+node -v   # v18+
 
-# 예시 실행
+# Example
 node scripts/correct-power.mjs --format json < examples/sample-input.json
 ```
 
 ---
 
-## 3. 첫 번째 요청 (복사해서 채팅에 붙여넣기)
+## 3. First requests (copy into chat)
 
-### A. 연결 테스트
-
-```
-Strava MCP health 확인하고, 최근 라이딩 3개만 요약해줘
-```
-
-### B. 세그먼트 분석
+### A. Connection test
 
 ```
-analyze-cycle: 최근 라이딩에서 세그먼트 effort 상위 5개 표로 정리해줘.
-시간·경사·기록 파워. 추정 파워라고 명시해줘.
+Check Strava MCP health and summarize my last 3 rides
 ```
 
-### C. 풍속 보정
+### B. Segment analysis
 
 ```
-weather-power: 어제(또는 최근) 라이딩 무풍 등가 파워 계산해줘.
-한글 용어로: 기록 파워, 바람 보정, 무풍 등가 파워.
+analyze-cycle: Top 5 segment efforts from my recent ride in a table.
+Time, grade, recorded power. State that it's estimated power.
 ```
 
-### D. PR 비교 (풀 패키지)
+### C. Wind correction
 
 ```
-PR 세그먼트와 이번 라이딩 비교:
-- 세그먼트 시간 (우선)
-- 날씨 (기온·풍속·풍향)
-- 무풍 등가 파워
-한 줄 결론 + 오차 범위
+weather-power: Calculate zero-wind equivalent power for yesterday (or recent) ride.
+Use Korean terms: 기록 파워, 바람 보정, 무풍 등가 파워.
+```
+
+### D. PR comparison (full package)
+
+```
+Compare PR segment vs this ride:
+- Segment time (priority)
+- Weather (temp, wind speed, direction)
+- Zero-wind equivalent power
+One-line conclusion + error range
 ```
 
 ---
 
-## 4. 체중 설정 (추정 파워 사용자 필독)
+## 4. Weight settings (estimated power users)
 
-| 어디 | 보통 의미 |
-|------|-----------|
-| Strava 프로필 체중 | **몸무게만** |
-| Garmin 등 속도계 **한 칸** | **몸+자전거+장비 합** 인 경우 많음 |
+| Where | Typical meaning |
+|-------|-----------------|
+| Strava profile weight | **Body only** |
+| Garmin etc. speedometer **single field** | Often **body + bike + gear total** |
 
-- 몸만 넣으면 업힐 **기록 파워 과소**
-- `correct-power.mjs` 기본: 프로필 몸무게 + 바이크 **10kg**
-- 실제와 다르면 `--rider 74 --bike 10` 조정
-
----
-
-## 5. 분석 우선순위 (스킬 공통 원칙)
-
-1. **세그먼트 시간** — 가장 신뢰
-2. **무풍 등가 파워** (weather-power)
-3. **기록 파워** 단독 비교 — 금지
-4. 평지 raw W로 FTP 역산 — 금지
-
-자세한 세그먼트 워크플로 → [segment-analysis.md](./segment-analysis.md)
+- Body only → uphill **recorded power too low**
+- `correct-power.mjs` default: profile body + bike **10kg**
+- Adjust with `--rider 74 --bike 10` if needed
 
 ---
 
-## 6. 문서 맵
+## 5. Analysis priority (all skills)
 
-| 문서 | 내용 |
-|------|------|
-| [setup-strava-mcp.md](./setup-strava-mcp.md) | MCP 설치·OAuth·트러블슈팅 |
-| [segment-analysis.md](./segment-analysis.md) | 세그먼트·PR·FTP |
-| [용어.md](./용어.md) | 한글 용어 (기록 파워, 무풍 등가…) |
-| [platforms.md](./platforms.md) | ChatGPT·Claude 등 |
-| [manual-strava-data.md](./manual-strava-data.md) | MCP 없을 때 |
+1. **Segment time** — most reliable
+2. **Zero-wind equivalent power** (weather-power)
+3. **Recorded power** alone — forbidden
+4. Flat raw W → FTP back-calc — forbidden
+
+Full segment workflow → [segment-analysis.md](./segment-analysis.md)
 
 ---
 
-## 7. 기여·피드백
+## 6. Doc map
 
-이슈·PR 환영. 코스·세그먼트 예시 PR도 좋습니다.
+| Doc | Content |
+|-----|---------|
+| [setup-strava-mcp.md](./setup-strava-mcp.md) | MCP install, OAuth, troubleshooting |
+| [segment-analysis.md](./segment-analysis.md) | Segments, PR, FTP |
+| [glossary.md](./glossary.md) | Terminology |
+| [platforms.md](./platforms.md) | ChatGPT, Claude, etc. |
+| [manual-strava-data.md](./manual-strava-data.md) | Without MCP |
 
-버그: MCP 연결 / 스크립트 / 스킬 문서 불명확한 절.
+---
+
+## 7. Contributing & feedback
+
+Issues and PRs welcome. Course/segment examples appreciated.
+
+Bugs: MCP connection / script / unclear skill docs.

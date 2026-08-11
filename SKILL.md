@@ -1,70 +1,73 @@
 ---
 name: ride-coach
 description: >-
-  Strava 사이클링 AI 코치. 세그먼트·코스·FTP 분석, 풍속·노면 보정 파워(무풍 등가),
-  PR 비교, 훈련 로드맵. "라이딩코치", "ride-coach", "세그먼트 분석", "코스 분석",
-  "업힌", "FTP", "최근 라이딩", "PR 비교", "훈련" 요청 시 사용. read-only.
+  Strava cycling AI coach. Segment, course, FTP analysis, wind/surface corrected
+  power (zero-wind equivalent), PR comparison, training roadmap. Triggers:
+  "ride-coach", "라이딩코치", "세그먼트 분석", "코스 분석", "업힌", "FTP",
+  "최근 라이딩", "PR 비교", "훈련". read-only.
 ---
 
-# Ride Coach (사이클링 AI 코치)
+# Ride Coach (Cycling AI Coach)
 
-Strava + Open-Meteo로 **세그먼트·코스·파워**를 분석하는 스킬 허브.
+**한국어:** [SKILL.ko.md](SKILL.ko.md)
 
-## 사전 준비 (필수)
+Skill hub for analyzing **segments, courses, and power** via Strava + Open-Meteo.
 
-**Strava MCP 없으면 동작하지 않음.**
+## Prerequisites (required)
 
-1. `docs/getting-started.md` — 클론·스킬 링크
+**Does not work without Strava MCP.**
+
+1. `docs/getting-started.md` — clone and skill links
 2. `docs/setup-strava-mcp.md` — **MCP + OAuth**
-3. 연결 확인: `health`, `get_recent_activities`
+3. Verify: `health`, `get_recent_activities`
 
-MCP 없을 때: `docs/manual-strava-data.md`
+Without MCP: `docs/manual-strava-data.md`
 
-## 하위 스킬
+## Sub-skills
 
-| 스킬 | 경로 | 할 일 |
-|------|------|--------|
-| **analyze-cycle** | `analyze-cycle/SKILL.md` | 세그먼트·코스·FTP·훈련 |
-| **weather-power** | `weather-power/SKILL.md` | 풍속·노면 → **무풍 등가 파워** |
+| Skill | Path | Role |
+|-------|------|------|
+| **analyze-cycle** | `analyze-cycle/SKILL.md` | Segments, courses, FTP, training |
+| **weather-power** | `weather-power/SKILL.md` | Wind/surface → **zero-wind equivalent power** |
 
-요청에 맞는 스킬 워크플로를 따르거나 둘을 조합 (PR 비교 = 세그먼트 시간 + 무풍 등가 파워).
+Follow the matching workflow or combine both (PR comparison = segment time + zero-wind power).
 
-## 용어 (사용자 응답 한글)
+## Terminology (Korean to users)
 
-| 내부 | 사용자에게 |
-|------|------------|
+| Internal | User-facing |
+|----------|-------------|
 | raw W | **기록 파워(W)** |
 | zero-wind W | **무풍 등가 파워(W)** |
 | windDeltaW | **바람 보정(W)** |
 
-`docs/용어.md` 참고. 영문 용어 노출 금지.
+See `docs/glossary.md`. Do not expose English terms to users.
 
-## 분석 우선순위
+## Analysis priority
 
-1. **세그먼트 시간**
-2. **무풍 등가 파워** (weather-power)
-3. 기록 파워 단독 비교 **금지**
-4. 추정 파워 ±10~15W 명시
+1. **Segment time**
+2. **Zero-wind equivalent power** (weather-power)
+3. Recorded power alone — **forbidden**
+4. State ±10~15W estimated-power error
 
 ## Workflow
 
 ```
-- [ ] 0. Strava MCP 확인
-- [ ] 1. 요청 분류 (세그먼트 / 코스 / 파워 / FTP / PR 비교)
-- [ ] 2. analyze-cycle 또는 weather-power 워크플로
-- [ ] 3. 표 + 한 줄 결론
+- [ ] 0. Verify Strava MCP
+- [ ] 1. Classify request (segment / course / power / FTP / PR compare)
+- [ ] 2. analyze-cycle or weather-power workflow
+- [ ] 3. Table + one-line conclusion
 ```
 
 ## Examples
 
-- "ride-coach 최근 라이딩 세그먼트 분석"
-- "라이딩코치 PR vs 오늘 업힌"
-- "승기천 무풍 등가 파워"
-- "FTP 추정 (추정 파워)"
-- "이번 주 훈련 로드맵"
+- "ride-coach analyze recent ride segments"
+- "라이딩코치 PR vs today uphill"
+- "승기천 zero-wind equivalent power"
+- "FTP estimate (estimated power)"
+- "this week training roadmap"
 
-## 문서
+## Docs
 
-- 세그먼트: `docs/segment-analysis.md`
+- Segments: `docs/segment-analysis.md`
 - MCP: `docs/setup-strava-mcp.md`
-- 온보딩: `docs/getting-started.md`
+- Onboarding: `docs/getting-started.md`
