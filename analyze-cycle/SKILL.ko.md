@@ -1,9 +1,9 @@
 ---
 name: analyze-cycle
 description: >-
-  단일 Strava 라이딩·코스 분석. 날씨 + 세그먼트별 기록·보정 파워 필수 출력.
-  "analyze-cycle", "세그먼트", "업힌", "코스 분석", "어제 라이딩", "보정 파워".
-  날짜 비교 → compare-cycle. read-only.
+  단일 Strava 라이딩·코스 분석. 날씨, 세그먼트별 기록·보정 파워, 구간 최고 파워
+  (15초~60분). "analyze-cycle", "1분 파워", "2분 파워", "코스 분석", "보정 파워".
+  비교 → compare-cycle. read-only.
 ---
 
 # Analyze Cycle (단일 라이딩 / 코스)
@@ -32,14 +32,41 @@ Strava MCP — `docs/setup-strava-mcp.ko.md`. MCP 없음 → `docs/manual-strava
 ```
 - [ ] 0. Strava MCP (health)
 - [ ] 1. 요청 분류
-- [ ] 2. get_activity_details + get_activity_streams
+- [ ] 2. get_activity_details + get_activity_streams + `get_athlete_profile` (FTP)
 - [ ] 3. activity / streams JSON 임시 저장
-- [ ] 4. scripts/segment-correct-power.mjs 실행 ← segment_efforts 있으면 필수
-- [ ] 5. 스크립트 markdown을 응답에 포함 (세그먼트 표 생략 금지)
+- [ ] 4. scripts/segment-correct-power.mjs ← 필수 (**구간 최고 파워 + 세그먼트**)
+- [ ] 5. 스크립트 markdown 포함 — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
 - [ ] 6. 세그먼트 시간 교차 검증 + 한 줄 결론 (±10~15W)
 ```
 
-**전체 라이딩 파워만** 보여주지 않음 — 세그먼트가 있으면 **각 행에 기록 파워·보정 파워**.
+**구간 최고 파워**(15초·1분·2분·5분·10분·20분·60분) **생략 금지** — 라이덕 스타일 피크 파워 + **보정 파워 + FTP %**.
+
+## 구간 최고 파워 (필수)
+
+streams `watts` + `time` rolling 최고 평균. 스크립트: `### 구간 최고 파워`.
+
+| 구간(초) | 표시 |
+|----------|------|
+| 15 | 15초 |
+| 60 | **1분** |
+| 120 | **2분** |
+| 300 | 5분 |
+| 600 | 10분 |
+| 1200 | 20분 |
+| 3600 | 60분 |
+
+- 라이딩 짧으면 긴 구간 자동 생략
+- `--ftp` 또는 프로필 FTP → 보정 파워 **FTP %**
+- 라이덕 앱과 ±10~15W 차이 가능 (sparse streams)
+
+```markdown
+### 구간 최고 파워
+| 구간 | 기록 파워 | **보정 파워** | FTP % |
+| 1분 | 303 W | **312 W** | 175% |
+| 2분 | 291 W | **298 W** | 168% |
+```
+
+세그먼트 없는 라이딩도 **구간 최고 파워 표는 항상** 포함.
 
 ### MCP
 
@@ -58,8 +85,11 @@ node ../scripts/segment-correct-power.mjs \
   --lat <start_lat> --lng <start_lng> \
   --date YYYY-MM-DD --hour <KST 시> \
   --rider 74 --bike 10 \
+  --ftp 178 \
   --format markdown
 ```
+
+- `--ftp` — 보정 파워 FTP % 표시
 
 - activity JSON에 `start_date_local` 있으면 `--date`/`--hour` 생략 가능
 - 전체만 필요할 때: `../scripts/correct-power.mjs --streams …`
@@ -73,7 +103,14 @@ node ../scripts/segment-correct-power.mjs \
 
 | 거리 | 이동 시간 | 상승 | 기록 파워(전체) |
 
-(segment-correct-power.mjs 출력 — 날씨 + 전체 + 세그먼트 표)
+(segment-correct-power.mjs 출력 — 날씨 + 전체 + **구간 최고 파워** + 세그먼트 표)
+
+### 구간 최고 파워 (필수)
+
+| 구간 | 기록 파워 | **보정 파워** | FTP % |
+| 15초 / 1분 / 2분 / 5분 / 10분 / 20분 / 60분 |
+
+라이딩이 짧으면 해당 구간 생략 (스크립트 자동).
 
 ### 해석
 - 랩/회전 시간 diff (해당 시)

@@ -37,8 +37,8 @@
 ## 스크립트
 
 ```bash
-# 세그먼트별 (analyze-cycle / compare-cycle)
-node scripts/segment-correct-power.mjs --activity … --streams … --lat … --lng …
+# 세그먼트별 (analyze-cycle / compare-cycle) — 구간 최고 파워 포함
+node scripts/segment-correct-power.mjs --activity … --streams … --ftp 178 …
 
 # 전체 라이딩만
 node scripts/correct-power.mjs --lat … --lng … --date … --hour … --streams …

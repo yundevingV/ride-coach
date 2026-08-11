@@ -10,8 +10,10 @@ import {
   CRR_WET,
   LOSS,
   buildPointsFromSlice,
+  computePeakPowers,
   fetchWeather,
   formatElapsed,
+  formatPeakTable,
   kstDateFromActivity,
   kstHourFromActivity,
   normalizeStreams,
@@ -136,6 +138,15 @@ function formatMarkdown(out, lang) {
     '',
   ];
 
+  if (out.peaks?.length) {
+    lines.push(
+      lang === 'en' ? '### Peak power (best rolling avg)' : '### 구간 최고 파워',
+      '',
+      formatPeakTable(out.peaks, lang, out.ftp),
+      '',
+    );
+  }
+
   const order = ['warmup', 'lap1', 'lap2', 'return', 'other'];
   for (const sec of order) {
     const rows = out.segments.filter((s) => s.section === sec);
@@ -172,10 +183,10 @@ async function main() {
   const rawStreams = JSON.parse(await readFile(args.streams, 'utf8'));
   const streams = normalizeStreams(rawStreams);
   const efforts = activity.segment_efforts ?? [];
-  if (!efforts.length) throw new Error('activity has no segment_efforts');
 
   const riderKg = Number(args.rider ?? 74);
   const bikeKg = Number(args.bike ?? 10);
+  const ftp = args.ftp ? Number(args.ftp) : activity.athlete?.ftp ?? null;
   const massKg = riderKg + bikeKg;
   const lat = Number(args.lat ?? activity.start_latlng?.[0]);
   const lng = Number(args.lng ?? activity.start_latlng?.[1]);
@@ -185,8 +196,9 @@ async function main() {
   const weather = await fetchWeather(lat, lng, date, hour);
   const wholePoints = buildPointsFromSlice(streams, 0, streams.latlng.length - 1, weather, massKg);
   const whole = summarize(wholePoints);
+  const peaks = computePeakPowers(streams, weather, massKg, ftp);
 
-  const grouped = groupSections(efforts);
+  const grouped = efforts.length ? groupSections(efforts) : [];
   const segments = grouped.map(({ effort, section }) => ({
     section,
     ...correctEffort(effort, streams, weather, massKg),
@@ -204,6 +216,8 @@ async function main() {
     bikeKg,
     model: { cda: CDA, crrDry: CRR_DRY, crrWet: CRR_WET, loss: LOSS },
     whole,
+    peaks,
+    ftp,
     segments,
   };
 

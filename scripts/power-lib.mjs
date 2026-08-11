@@ -156,6 +156,7 @@ export function normalizeStreams(raw) {
     velocity_smooth: data.velocity_smooth?.data ?? data.velocity_smooth,
     grade_smooth: data.grade_smooth?.data ?? data.grade_smooth,
     watts: data.watts?.data ?? data.watts,
+    time: data.time?.data ?? data.time,
   };
 }
 
@@ -218,4 +219,127 @@ export function kstDateFromActivity(activity) {
   const local = activity.start_date_local ?? activity.start_date ?? '';
   const m = local.match(/^(\d{4}-\d{2}-\d{2})/);
   return m ? m[1] : null;
+}
+
+/** Standard peak-power windows (seconds). */
+export const PEAK_DURATIONS_SEC = [
+  { sec: 15, labelKo: '15초', labelEn: '15s' },
+  { sec: 60, labelKo: '1분', labelEn: '1min' },
+  { sec: 120, labelKo: '2분', labelEn: '2min' },
+  { sec: 300, labelKo: '5분', labelEn: '5min' },
+  { sec: 600, labelKo: '10분', labelEn: '10min' },
+  { sec: 1200, labelKo: '20분', labelEn: '20min' },
+  { sec: 3600, labelKo: '60분', labelEn: '60min' },
+];
+
+function maxRollingAvg(values, timeSec, durationSec) {
+  if (!values.length) return null;
+  const useTime = timeSec && timeSec.length === values.length;
+  let best = 0;
+
+  if (!useTime) {
+    const minSamples = Math.max(3, Math.floor(durationSec * 0.5));
+    if (values.length < minSamples) return null;
+    for (let i = 0; i <= values.length - minSamples; i++) {
+      let sum = 0;
+      let count = 0;
+      for (let j = i; j < values.length && j < i + durationSec; j++) {
+        sum += values[j] ?? 0;
+        count += 1;
+      }
+      if (count >= minSamples) best = Math.max(best, sum / count);
+    }
+    return best > 0 ? Math.round(best) : null;
+  }
+
+  for (let i = 0; i < values.length; i++) {
+    const t0 = timeSec[i];
+    let sum = 0;
+    let count = 0;
+    let tEnd = t0;
+    for (let j = i; j < values.length; j++) {
+      tEnd = timeSec[j];
+      if (tEnd - t0 > durationSec) break;
+      sum += values[j] ?? 0;
+      count += 1;
+    }
+    const span = tEnd - t0;
+    if (count >= 3 && span >= durationSec * 0.9) {
+      best = Math.max(best, sum / count);
+    }
+  }
+  return best > 0 ? Math.round(best) : null;
+}
+
+/** Build per-sample recorded + corrected W aligned to stream indices (from index 1). */
+export function buildCorrectedSeries(streams, weather, massKg) {
+  const { latlng, velocity_smooth: vel, grade_smooth: grade, watts, time } = streams;
+  if (!latlng?.length) return { recorded: [], corrected: [], timeSec: [] };
+
+  const wet = weather.precipDayMm > 5 || weather.precipMm > 1;
+  const recorded = [];
+  const corrected = [];
+  const timeSec = [];
+
+  for (let i = 1; i < latlng.length; i++) {
+    const wRaw = watts?.[i] ?? 0;
+    const v = vel?.[i] ?? 0;
+    recorded.push(wRaw);
+    timeSec.push(time?.[i] ?? i - 1);
+
+    if (v < 0.5) {
+      corrected.push(wRaw);
+      continue;
+    }
+    const [lat1, lon1] = latlng[i - 1];
+    const [lat2, lon2] = latlng[i];
+    const g = grade?.[i] ?? 0;
+    const b = bearingDeg(lat1, lon1, lat2, lon2);
+    const wPar = windParallelKmh(b, weather.windFromDeg, weather.windKmh) / 3.6;
+    const dWind = aeroDeltaW(v, wPar);
+    const dSurf = surfaceDeltaW(v, g, massKg, wet);
+    corrected.push(wRaw + (dWind + dSurf) / (1 - LOSS));
+  }
+  return { recorded, corrected, timeSec };
+}
+
+export function computePeakPowers(streams, weather, massKg, ftp = null) {
+  const { recorded, corrected, timeSec } = buildCorrectedSeries(streams, weather, massKg);
+  const elapsed =
+    timeSec.length >= 2 ? timeSec[timeSec.length - 1] - timeSec[0] : recorded.length;
+
+  const peaks = PEAK_DURATIONS_SEC
+    .filter(({ sec }) => elapsed >= sec * 0.9)
+    .map(({ sec, labelKo, labelEn }) => {
+      const rec = maxRollingAvg(recorded, timeSec, sec);
+      const cor = maxRollingAvg(corrected, timeSec, sec);
+      const pct = ftp && cor ? Math.round((cor / ftp) * 100) : null;
+      return { sec, labelKo, labelEn, recordedW: rec, correctedW: cor, ftpPct: pct };
+    });
+
+  return peaks;
+}
+
+export function formatPeakTable(peaks, lang, ftp = null) {
+  if (!peaks?.length) return '';
+  const h =
+    lang === 'en'
+      ? `| Duration | Recorded W | **Corrected W** |${ftp ? ' FTP % |' : ''}`
+      : `| 구간 | 기록 파워 | **보정 파워** |${ftp ? ' FTP % |' : ''}`;
+  const sep =
+    lang === 'en'
+      ? `|----------|------------|---------------|${ftp ? '-------|' : ''}`
+      : `|------|-----------|---------------|${ftp ? '-------|' : ''}`;
+  const rows = peaks
+    .filter((p) => p.recordedW != null || p.correctedW != null)
+    .map((p) => {
+    const label = lang === 'en' ? p.labelEn : p.labelKo;
+    const rec = p.recordedW ?? '—';
+    const cor = p.correctedW ?? '—';
+    const pct = p.ftpPct != null ? `${p.ftpPct}%` : '—';
+    return ftp
+      ? `| ${label} | ${rec} W | **${cor} W** | ${pct} |`
+      : `| ${label} | ${rec} W | **${cor} W** |`;
+  });
+  return [h, sep, ...rows].join('\n');
 }

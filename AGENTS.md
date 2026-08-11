@@ -37,8 +37,8 @@ Do not say 무풍 등가, raw W to users.
 ## Script
 
 ```bash
-# Per-segment (analyze-cycle / compare-cycle)
-node scripts/segment-correct-power.mjs --activity … --streams … --lat … --lng …
+# Per-segment (analyze-cycle / compare-cycle) — includes peak power table
+node scripts/segment-correct-power.mjs --activity … --streams … --ftp 178 …
 
 # Whole ride only
 node scripts/correct-power.mjs --lat … --lng … --date … --hour … --streams …

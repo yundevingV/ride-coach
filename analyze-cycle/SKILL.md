@@ -1,9 +1,9 @@
 ---
 name: analyze-cycle
 description: >-
-  Single Strava ride or segment analysis with weather and per-segment corrected
-  power. Triggers: "analyze-cycle", "세그먼트", "업힌", "코스 분석", "어제 라이딩",
-  "보정 파워". Cross-day compare → compare-cycle. read-only.
+  Single Strava ride or segment analysis. Weather, per-segment corrected power,
+  peak power (15s–60min). Triggers: "analyze-cycle", "세그먼트", "1분 파워",
+  "코스 분석", "보정 파워". Compare → compare-cycle. read-only.
 ---
 
 # Analyze Cycle (Single Ride / Segment)
@@ -33,14 +33,42 @@ Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 ```
 - [ ] 0. Strava MCP (health)
 - [ ] 1. Classify request
-- [ ] 2. get_activity_details + get_activity_streams (latlng, velocity_smooth, grade_smooth, watts)
+- [ ] 2. get_activity_details + get_activity_streams + `get_athlete_profile` (FTP)
 - [ ] 3. Save activity JSON + streams JSON to temp files
-- [ ] 4. scripts/segment-correct-power.mjs  ← REQUIRED if segment_efforts exist
-- [ ] 5. Paste script markdown into response (do not skip segment table)
+- [ ] 4. scripts/segment-correct-power.mjs  ← REQUIRED (segments + **peak power**)
+- [ ] 5. Paste script markdown — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
 - [ ] 6. Cross-validate segment time + one-line conclusion (±10~15W)
 ```
 
-**Never** show whole-ride power only when the ride has segment efforts — users expect **every segment row: 기록 파워 + 보정 파워**.
+**Never** skip **구간 최고 파워** (15초·1분·2분·5분·10분·20분·60분) — users expect Riduck-style peak table with **기록 파워 + 보정 파워 + FTP %**.
+
+## Peak power (구간 최고 파워) — mandatory
+
+Rolling best average from streams (`watts` + `time`). Script section: `### 구간 최고 파워`.
+
+| Window | Label (KO) |
+|--------|------------|
+| 15s | 15초 |
+| 60s | **1분** |
+| 120s | **2분** |
+| 300s | 5분 |
+| 600s | 10분 |
+| 1200s | 20분 |
+| 3600s | 60분 |
+
+- Shorter ride → longer windows omitted automatically
+- `--ftp` from profile or `--ftp 178` → **FTP %** on **보정 파워**
+- Riduck app numbers may differ slightly (sparse streams, ±10~15W)
+
+```markdown
+### 구간 최고 파워
+| 구간 | 기록 파워 | **보정 파워** | FTP % |
+| 15초 | 432 W | **411 W** | 231% |
+| 1분 | 303 W | **312 W** | 175% |
+| 2분 | … | … | … |
+```
+
+Always include this block **even when** segment_efforts is empty (whole-ride analysis only).
 
 ### MCP tools
 
@@ -59,10 +87,12 @@ node ../scripts/segment-correct-power.mjs \
   --lat <start_lat> --lng <start_lng> \
   --date YYYY-MM-DD --hour <KST hour> \
   --rider 74 --bike 10 \
+  --ftp 178 \
   --format markdown
 ```
 
 - `--date` / `--hour` optional if `start_date_local` is in activity JSON
+- `--ftp` optional — shows **보정 파워 FTP %** in peak table
 - `--format json` for structured output
 - Whole-ride summary only: `../scripts/correct-power.mjs --streams …`
 
@@ -76,7 +106,14 @@ Copy script output, then add ride header + conclusion:
 | 거리 | 이동 시간 | 상승 | 기록 파워(전체) |
 (ride summary row)
 
-(paste segment-correct-power.mjs markdown — 날씨 + 전체 + 세그먼트 표)
+(paste segment-correct-power.mjs markdown — 날씨 + 전체 + **구간 최고 파워** + 세그먼트 표)
+
+### Peak power block (mandatory)
+
+| 구간 | 기록 파워 | **보정 파워** | FTP % |
+| 15초 / 1분 / 2분 / 5분 / 10분 / 20분 / 60분 |
+
+Ride shorter than window → skip that row (script auto-filters).
 
 ### 해석
 - 2회전/랩 시간 diff (if applicable)
