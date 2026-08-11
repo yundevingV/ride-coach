@@ -26,7 +26,7 @@ cd ride-coach
 mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ```
 
 Claude Code:
@@ -35,7 +35,7 @@ Claude Code:
 mkdir -p ~/.claude/skills
 ln -sf "$(pwd)" ~/.claude/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.claude/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.claude/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.claude/skills/compare-cycle
 ```
 
 ---
@@ -112,14 +112,14 @@ Strava MCP health 확인해줘
 | 스킬 | 할 일 |
 |------|--------|
 | **ride-coach** | 허브·라이딩 코치 (진입점) |
-| **analyze-cycle** | 세그먼트·코스·FTP·훈련 로드맵 |
-| **weather-power** | 풍속·노면 → **무풍 등가 파워** |
+| **analyze-cycle** | 단일 라이딩·세그먼트 — 날씨 + 보정 파워 |
+| **compare-cycle** | PR vs 오늘, 날짜 간 비교 |
 
 예시 요청:
 
-- 「최근 승기천 세그먼트 PR 비교해줘」→ analyze-cycle
-- 「어제 라이딩 바람 보정 파워」→ weather-power
-- 「PR 날 vs 오늘, 세그먼트 시간 + 무풍 등가 파워」→ 둘 다
+- 「어제 라이딩 분석」→ analyze-cycle
+- 「최근 승기천 세그먼트 PR」→ analyze-cycle
+- 「PR 날 vs 오늘, 시간 + 보정 파워」→ compare-cycle
 
 ---
 

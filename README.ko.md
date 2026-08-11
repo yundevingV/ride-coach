@@ -2,7 +2,7 @@
 
 **English:** [README.md](README.md)
 
-**ride-coach**용 Agent Skills — Strava 세그먼트·코스 분석과 Open-Meteo 기반 **풍속·노면 보정 파워**(무풍 등가 파워)를 AI 에이전트가 자동으로 수행합니다. 파워 보정은 JSON 출력을 지원하고, 스킬 시스템으로 전체 워크플로를 탐색·실행합니다.
+**ride-coach**용 Agent Skills — Strava 세그먼트·코스 분석과 Open-Meteo 기반 **풍속·노면 보정 파워**를 AI 에이전트가 자동 수행합니다.
 
 > Strava **추정 파워** 기준. 오차 **±10~15W**.
 
@@ -17,7 +17,7 @@ cd ride-coach
 mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ```
 
 **필수:** [Strava MCP + OAuth](docs/setup-strava-mcp.ko.md) — 없으면 활동 조회 불가.
@@ -26,23 +26,23 @@ Cursor 채팅에서 slash 또는 자연어로 호출:
 
 ```
 /ride-coach 최근 라이딩 세그먼트 상위 5개 정리해줘
-/weather-power 어제 라이딩 무풍 등가 파워 계산해줘
-/analyze-cycle PR 세그먼트와 이번 라이딩 비교해줘
+/analyze-cycle 어제 라이딩 분석해줘
+/compare-cycle PR 세그먼트와 이번 라이딩 비교해줘
 ```
 
 파워 보정 스크립트만 설치:
 
 ```bash
-npm install -g .   # weather-power / ride-coach-power CLI
+npm install -g .   # ride-coach-power CLI
 ```
 
 ## 기능
 
 - **세그먼트** — 탐색·순위·effort 비교. PR, 경사, **시간**(1순위), 구간별 추정 파워 신뢰도.
 - **코스** — 최근 라이딩·코스 세그먼트·랩 비교·코스 트렌드.
-- **풍속 보정 파워** — 추정 파워에 역풍/순풍·젖은 노면 보정 → **무풍 등가 파워**.
-- **PR 비교** — PR일 vs 오늘: 세그먼트 시간 + 날씨 + 무풍 등가 파워 교차 검증. 모순 시 **시간 우선**.
-- **FTP·훈련** — 업힐 무풍 등가 파워 기반 FTP 추정(평지 기록 파워 금지). 주간 훈련 로드맵.
+- **풍속 보정 파워** — 추정 파워에 역풍/순풍·젖은 노면 보정 → **보정 파워**.
+- **PR 비교** — PR일 vs 오늘: 세그먼트 시간 + 날씨 + 보정 파워 교차 검증. 모순 시 **시간 우선**.
+- **FTP·훈련** — 업힐 보정 파워 기반 FTP 추정(평지 기록 파워 금지). 주간 훈련 로드맵.
 - **날씨** — Open-Meteo Archive(KST). wttr.in 폴백. 2시간+ 라이딩은 시작·중간·종료 평균.
 
 ## 빠른 시작
@@ -77,9 +77,9 @@ node scripts/correct-power.mjs \
 
 | 스킬 | Slash / 트리거 | 설명 |
 | ---- | -------------- | ---- |
-| `ride-coach` | `/ride-coach`, "라이딩코치" | 허브 — analyze-cycle / weather-power 라우팅 |
-| `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | 세그먼트·코스·FTP·훈련 로드맵 |
-| `weather-power` | `/weather-power`, "무풍 등가 파워" | 풍속·노면 → 무풍 등가 파워 |
+| `ride-coach` | `/ride-coach`, "라이딩코치" | 허브 — analyze-cycle / compare-cycle 라우팅 |
+| `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | 단일 라이딩·세그먼트 — 날씨 + 보정 파워 |
+| `compare-cycle` | `/compare-cycle`, "PR 비교" | 같은 세그먼트·날짜 간 비교 |
 
 ## Strava MCP 도구
 
@@ -148,7 +148,7 @@ npm run example
 | 내부 (JSON) | 사용자에게 |
 | ----------- | ---------- |
 | raw W, rawAvgW | **기록 파워(W)** — Strava 표시값 |
-| zeroWindW | **무풍 등가 파워(W)** |
+| zeroWindW | **보정 파워(W)** |
 | windDeltaW | **바람 보정(W)** (+역풍 / −순풍) |
 | surfaceDeltaW | **노면 보정(W)** |
 | headwindPct | **역풍 구간(%)** |
@@ -160,7 +160,7 @@ npm run example
 에이전트가 매 분석에 따르는 우선순위:
 
 1. **세그먼트 시간** — 가장 신뢰
-2. **무풍 등가 파워** — weather-power 스킬
+2. **보정 파워** — analyze-cycle / compare-cycle 내장
 3. **기록 파워 단독** — 보정 없이 활동 간 비교 금지
 4. 평지 기록 파워 → FTP 역산 금지
 
@@ -168,7 +168,7 @@ npm run example
 
 | 구간 | 신뢰도 | 분석 |
 | ---- | ------ | ---- |
-| 업힐 3%+ | 중~상 | 무풍 등가 파워 사용 가능 |
+| 업힐 3%+ | 중~상 | 보정 파워 사용 가능 |
 | 롤링 | 중 | 시간 우선 |
 | 평지 | 낮 | 기록 파워 참고만 |
 | 다운힐 | 무시 | W 분석 제외 |
@@ -177,13 +177,13 @@ npm run example
 
 ## PR 비교 (풀 패키지)
 
-`analyze-cycle` + `weather-power` 한 번에:
+**`compare-cycle`** 사용:
 
 ```
-PR 세그먼트와 이번 라이딩 비교:
+/compare-cycle PR 세그먼트와 이번 라이딩 비교:
 - 세그먼트 시간 (우선)
 - 날씨 (기온·풍속·풍향)
-- 무풍 등가 파워
+- 보정 파워 diff
 한 줄 결론 + 오차 범위
 ```
 
@@ -207,8 +207,8 @@ PR 세그먼트와 이번 라이딩 비교:
 ```
 ride-coach/
 ├── SKILL.md                 # ride-coach (허브)
-├── analyze-cycle/SKILL.md   # 세그먼트·코스
-├── weather-power/SKILL.md     # 무풍 등가 파워
+├── analyze-cycle/SKILL.md   # 단일 라이딩·세그먼트
+├── compare-cycle/SKILL.md   # 날짜·PR 비교
 ├── scripts/correct-power.mjs
 ├── examples/sample-input.json
 ├── docs/

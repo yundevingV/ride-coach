@@ -4,11 +4,11 @@
   "description": "사이클링 AI 코치 — Strava 세그먼트 분석 + Open-Meteo 풍속·노면 보정",
   "type": "module",
   "bin": {
-    "ride-coach-power": "./scripts/correct-power.mjs",
-    "weather-power": "./scripts/correct-power.mjs"
+    "ride-coach-power": "./scripts/correct-power.mjs"
   },
   "scripts": {
     "correct": "node scripts/correct-power.mjs",
+    "segments": "node scripts/segment-correct-power.mjs",
     "example": "node scripts/correct-power.mjs --format json < examples/sample-input.json"
   },
   "keywords": ["cycling", "strava", "coach", "segment", "power", "wind"],

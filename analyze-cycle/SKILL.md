@@ -1,164 +1,105 @@
 ---
 name: analyze-cycle
 description: >-
-  Strava cycling course, segment, ride analysis. Estimated power (speedometer)
-  weather correction, segment time comparison, FTP and training roadmap.
-  Triggers: "analyze-cycle", "코스 분석", "세그먼트", "업힌", "FTP 추정",
-  "최근 라이딩", "날씨 보정", "추정 파워". read-only. No code edits.
+  Single Strava ride or segment analysis with weather and per-segment corrected
+  power. Triggers: "analyze-cycle", "세그먼트", "업힌", "코스 분석", "어제 라이딩",
+  "보정 파워". Cross-day compare → compare-cycle. read-only.
 ---
 
-# Analyze Cycle (Strava Read-only)
+# Analyze Cycle (Single Ride / Segment)
 
 **한국어:** [SKILL.ko.md](SKILL.ko.md)
 
+**One activity** — weather + **per-segment recorded & corrected power** (mandatory when `segment_efforts` exist).
+
+PR / multi-day compare → **`compare-cycle`**.
+
 ## Prerequisites
 
-**Does not work without Strava MCP.**
-
-1. Clone + skill links → `docs/getting-started.md`
-2. **Strava MCP OAuth** → `docs/setup-strava-mcp.md` (required)
-3. Verify: `health`, `get_recent_activities`
-4. Segment guide → `docs/segment-analysis.md`
-5. Precise wind correction → `weather-power` skill (`../weather-power/SKILL.md`)
-
-Without MCP → `docs/manual-strava-data.md`
-
-## Core assumptions (required)
-
-**Default: estimated power speedometer** (model W from speed, GPS grade, weight). Not a power meter.
-
-- Strava `device_watts: true` may still be **estimated W** — treat as estimated until user confirms.
-- **Do not compare recorded power alone.** Present zero-wind equivalent power + segment **time** together.
-- Priority: **① segment time → ② zero-wind power → ③ RPE** (flat recorded W and FTP back-calc are lowest).
+Strava MCP — `docs/setup-strava-mcp.md`. No MCP → `docs/manual-strava-data.md`.
 
 ## Terminology (Korean to users)
 
 | Internal | User-facing |
 |----------|-------------|
-| raw W | **기록 파워(W)** |
-| zero-wind W | **무풍 등가 파워(W)** |
-| corrected W | **무풍 등가 파워** or **날씨 보정 파워** |
+| rawAvgW | **기록 파워(W)** |
+| zeroWindW | **보정 파워(W)** |
+| windDeltaW | **바람 보정(W)** |
 
-See `docs/glossary.md`.
-
-## Rules
-
-- Minimal greeting. Tables + one-line conclusion.
-- **Read/analyze only.** No Strava writes, code edits, or commits.
-- MCP: `user-strava` required (`strava` in `~/.cursor/mcp.json`).
-- Terminal: `node`/`curl` allowed for weather and correction.
-- Label all W with **(estimated / before/after correction)**.
-- Present estimates as **ranges**. One-line limitations required.
+Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 
 ## Workflow
 
 ```
-- [ ] 0. Verify Strava MCP (health)
+- [ ] 0. Strava MCP (health)
 - [ ] 1. Classify request
-- [ ] 2. Collect Strava data
-- [ ] 3. Weather at ride time (for power analysis)
-- [ ] 4. weather-power or heuristic correction
-- [ ] 5. Cross-validate with segment time
-- [ ] 6. Output Template response
+- [ ] 2. get_activity_details + get_activity_streams (latlng, velocity_smooth, grade_smooth, watts)
+- [ ] 3. Save activity JSON + streams JSON to temp files
+- [ ] 4. scripts/segment-correct-power.mjs  ← REQUIRED if segment_efforts exist
+- [ ] 5. Paste script markdown into response (do not skip segment table)
+- [ ] 6. Cross-validate segment time + one-line conclusion (±10~15W)
 ```
 
-### Request type → tools
+**Never** show whole-ride power only when the ride has segment efforts — users expect **every segment row: 기록 파워 + 보정 파워**.
+
+### MCP tools
 
 | Type | Tools |
 |------|-------|
-| Segment/climb | `explore_segments` → `get_segment_details` |
-| Recent course | `get_recent_activities` → `get_activity_details` |
-| Specific ride | `get_activity_details` → `get_activity_streams` |
-| Weather W correction | `weather-power` skill first |
-| FTP/roadmap | zero-wind power + segment PR + profile |
+| Specific ride / course | `get_activity_details` → `get_activity_streams` |
+| Segment search | `explore_segments`, `get_segment_details`, `list_my_segment_efforts` |
+| FTP hint | uphill corrected W + `get_athlete_profile` |
 
-### Strava MCP tools
+## Segment power script (required)
 
-- `get_athlete_profile` — weight, ftp
-- `get_activity_details` — segment_efforts, watts, start_latlng, start_date_local
-- `get_activity_streams` — watts, grade_smooth, velocity, latlng
-- `get_segment_details` — PR, elevation
-- `explore_segments` / `list_my_segment_efforts` / `get_athlete_stats`
-
-Setup: `docs/setup-strava-mcp.md`
-
----
-
-## Interpreting estimated power
-
-### Confidence by terrain
-
-| Terrain | Recorded W confidence | Analysis |
-|---------|----------------------|----------|
-| Climb 3%+ | Medium–High | Zero-wind power OK |
-| Rolling | Medium | Time first |
-| Flat | Low | Recorded W reference only |
-| Downhill | Ignore | Exclude from W analysis |
-
-### Weight settings
-
-| Location | Typical meaning |
-|----------|-----------------|
-| Speedometer field | **Body + bike + gear total** |
-| Strava profile | **Body weight only** |
-
-- Body only → uphill recorded W **too low**
-- Confirm actual speedometer setting before correction
-
----
-
-## Weather correction W
-
-> **Precise wind correction** → `weather-power` (`../scripts/correct-power.mjs`, Open-Meteo).  
-> This section is **heuristic fallback** without MCP/script.
-
-| Factor | Adjustment (added to recorded W) |
-|--------|----------------------------------|
-| Wet surface | +8~15W (climb) |
-| Headwind feel | +5~20W (range) |
-| Tailwind | -5~15W |
-
-On contradiction → **segment time** wins.
-
----
-
-## FTP estimate
-
-- Flat 20min recorded W → FTP **forbidden**
-- Climb 3~5min **zero-wind power** → back-calc FTP at 110~120%
-- State **±10~15W** error
-
----
-
-## Output Template
-
-### Segment/climb
-
-```
-## [Segment name]
-| distance | climb | grade | PR time | recorded W | zero-wind W |
-- confidence, one-line conclusion
+```bash
+node ../scripts/segment-correct-power.mjs \
+  --activity /tmp/activity.json \
+  --streams /tmp/streams.json \
+  --lat <start_lat> --lng <start_lng> \
+  --date YYYY-MM-DD --hour <KST hour> \
+  --rider 74 --bike 10 \
+  --format markdown
 ```
 
-### Weather correction
+- `--date` / `--hour` optional if `start_date_local` is in activity JSON
+- `--format json` for structured output
+- Whole-ride summary only: `../scripts/correct-power.mjs --streams …`
 
+## Mandatory output structure
+
+Copy script output, then add ride header + conclusion:
+
+```markdown
+## [활동명] — 코스 분석 (YYYY-MM-DD)
+
+| 거리 | 이동 시간 | 상승 | 기록 파워(전체) |
+(ride summary row)
+
+(paste segment-correct-power.mjs markdown — 날씨 + 전체 + 세그먼트 표)
+
+### 해석
+- 2회전/랩 시간 diff (if applicable)
+- 보정 > 기록 → 역풍 · 보정 < 기록 → 순풍
+- 한 줄 결론 + 추정 파워 ±10~15W
 ```
-## Weather (ride time)
-| temp | precip | wind | surface |
 
-## Correction
-| recorded W | wind adj | surface adj | zero-wind W |
-| vs PR time diff | power diff |
+### Segment table columns (must include)
 
-One-line conclusion + estimated power limits
-```
+| 세그먼트 | 시간 | 경사 | **기록 파워** | **보정 파워** |
 
----
+Grouped by section when script detects laps (출발 / 1회전 / 2회전 / 귀가).
+
+## Priority
+
+1. Segment **time**
+2. **Corrected power** per segment
+3. No recorded-power-only comparison
 
 ## Examples
 
-- "analyze recent ride segments"
-- "this climb PR vs today"
-- "compare 7 laps with weather correction"
-- "FTP estimate (estimated power)"
+- "analyze-cycle yesterday ride"
+- "어제 코스 분석해줘"
 - "analyze-cycle activity 19681287204"
+
+Compare rides → `compare-cycle`

@@ -21,7 +21,7 @@ Onboarding: [getting-started.md](./getting-started.md)
 mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ```
 
 ### 2. Strava MCP
@@ -36,7 +36,7 @@ Follow [setup-strava-mcp.md](./setup-strava-mcp.md) fully.
 mkdir -p ~/.claude/skills
 ln -sf "$(pwd)" ~/.claude/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.claude/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.claude/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.claude/skills/compare-cycle
 ```
 
 ---
@@ -58,7 +58,7 @@ Root `AGENTS.md` is auto-detected.
 | Skill | Role |
 |-------|------|
 | `ride-coach` | Hub, cycling coach |
-| `analyze-cycle` | Segments, courses, FTP |
-| `weather-power` | Zero-wind equivalent power |
+| `analyze-cycle` | Single ride / segment + corrected power |
+| `compare-cycle` | Cross-day / PR comparison |
 
 Link all three recommended.

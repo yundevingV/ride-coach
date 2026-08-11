@@ -2,30 +2,47 @@
 
 **English:** [segment-analysis.md](segment-analysis.md)
 
-`analyze-cycle` 스킬 + Strava MCP로 **세그먼트·업힐·PR**을 분석하는 방법.
+**`analyze-cycle`** (단일) + **`compare-cycle`** (날짜·PR 비교)로 세그먼트·업힌·PR 분석.
 
 ## 사전 조건
 
 - [Strava MCP 설정](./setup-strava-mcp.ko.md) 완료
-- 스킬: `analyze-cycle` (+ 파워 보정 시 `weather-power`)
+- 스킬: `analyze-cycle`, `compare-cycle`
+
+## 스킬 라우팅
+
+| 목적 | 스킬 |
+|------|------|
+| 한 라이딩, 한 세그먼트, 업힌 코스 | `analyze-cycle` |
+| PR vs 오늘, 같은 세그먼트 다른 날, 두 라이딩 | `compare-cycle` |
 
 ## 핵심 가정
 
 - Strava **추정 파워** (속도계). 실측 파워미터 아닐 수 있음.
 - **세그먼트 시간 > 파워** — W가 모순되면 시간을 믿음.
-- 기록 파워만으로 PR/ FTP 결론 **금지** → 무풍 등가 파워 또는 시간.
+- 기록 파워만으로 PR/ FTP 결론 **금지** → 보정 파워 또는 시간.
 
 ---
 
-## 워크플로
+## 워크플로 (analyze-cycle)
 
 ```
-1. 요청 분류 (세그먼트 / 코스 / FTP / 날씨 비교)
-2. Strava 데이터 수집
-3. (파워 분석 시) Open-Meteo 날씨
-4. (정밀 시) weather-power → 무풍 등가 파워
-5. 세그먼트 시간과 교차 검증
+1. 분류: 전체 라이딩 / 세그먼트 / 코스 / FTP 힌트
+2. Strava 데이터 + streams
+3. Open-Meteo 날씨
+4. scripts/segment-correct-power.mjs → 세그먼트별 보정 파워
+5. 세그먼트 시간 교차 검증
 6. 표 + 한 줄 결론
+```
+
+## 워크플로 (compare-cycle)
+
+```
+1. 기준 + 비교 활동/effort 선정
+2. 각 활동에 analyze-cycle 단계 실행
+3. diff 표: 시간, 날씨, 보정 파워
+4. 체력 vs 날씨 해석
+5. 한 줄 결론
 ```
 
 ---
@@ -46,71 +63,79 @@
 
 ## 예시 프롬프트
 
-### 특정 라이딩 세그먼트
+### 특정 라이딩 세그먼트 → analyze-cycle
 
 ```
-activity_id {ID} 세그먼트 effort 전부 표로.
-컬럼: 세그먼트명, 시간, 경사, 기록 파워, PR 순위(pr_rank 있으면)
+activity_id {ID} — 세그먼트 effort 전체 표.
+열: 이름, 시간, 경사, 기록 파워, 보정 파워, PR 순위
 ```
 
-### 업힐만
+### 업힌만 → analyze-cycle
 
 ```
-최근 라이딩에서 경사 3% 이상 세그먼트만.
-시간 비교 가능하게 정렬.
+최근 라이딩에서 경사 3% 이상 세그먼트.
+날씨 + 업힐 보정 파워 포함.
 ```
 
-### 세그먼트 PR 추이
+### 세그먼트 PR 트렌드 → compare-cycle
 
 ```
-세그먼트 ID {SEG_ID} list_my_segment_efforts로
-과거 기록 시간 추이 + 날씨는 각 활동 날짜만.
+세그먼트 ID {SEG_ID} — list_my_segment_efforts 시간 추이.
+effort별 보정 파워 + 날씨 요약.
 ```
 
-### PR vs 오늘 (풀 분석)
+### PR vs 오늘 → compare-cycle
 
 ```
-세그먼트 {이름}:
-- PR 날 vs 이번: 시간, 기록 파워, 무풍 등가 파워
+/compare-cycle 세그먼트 {name}:
+- PR 날 vs 이번: 시간, 기록 파워, 보정 파워
 - 날씨 차이
-- 한 줄: 체력/컨디션/날씨 해석
+- 한 줄: 체력 / 날씨 해석
 ```
 
 ---
 
-## 출력 템플릿 (세그먼트)
+## 출력 템플릿 (단일 세그먼트 — analyze-cycle)
 
 ```markdown
 ## [세그먼트명]
 
-| 거리 | 상승 | 경사 | 이번 시간 | PR | 기록 파워 | 무풍 등가 파워 |
-|------|------|------|-----------|-----|-----------|----------------|
+| 거리 | 경사 | 시간 | PR | 기록 파워 | 보정 파워 |
 
-- 신뢰도: 업힐 / 평지
-- 한 줄 결론
-- 한계: 추정 파워 ±10~15W
+날씨 블록 + 한 줄 결론 + ±10~15W
+```
+
+## 출력 템플릿 (비교 — compare-cycle)
+
+```markdown
+| | 기준 | 이번 | 차이 |
+| 시간 | | | |
+| 보정 파워 | | | |
+| 날씨 | | | |
+
+결론 + 한계
 ```
 
 ---
 
 ## 날씨·파워 보정
 
-정밀 풍속 보정 → **weather-power** 스킬 (`scripts/correct-power.mjs`).
+두 스킬 모두 `scripts/segment-correct-power.mjs`(세그먼트별) + `scripts/correct-power.mjs`(전체).
 
-| 한글 | 의미 |
-|------|------|
+| 한글 (사용자) | 의미 |
+|---------------|------|
 | 기록 파워 | Strava 표시 W |
-| 무풍 등가 파워 | 바람 0 환산 W |
+| 보정 파워 | 날씨 보정 W |
 | 바람 보정 | 역풍 + / 순풍 − |
 
-MCP 없이 휴리스틱만 쓸 때는 `analyze-cycle/SKILL.ko.md` 내부 표 참고.
+휴리스틱 폴백 (streams 없음) → `analyze-cycle/SKILL.ko.md`
 
 ---
 
-## FTP 추정 (추정 파워 환경)
+## FTP 추정 (추정 파워)
 
 - 평지 20분 기록 파워 → FTP **금지**
-- 업힐 3~5분 **무풍 등가 파워** → FTP 110~120% 역산 (범위)
+- 업힐 3~5분 **보정 파워** → FTP 110~120% 역산 (범위)
 - 결론에 **±10~15W** 오차 명시
 
 ---
@@ -121,8 +146,8 @@ MCP 없이 휴리스틱만 쓸 때는 `analyze-cycle/SKILL.ko.md` 내부 표 참
 |------|------|
 | 세그먼트 시간 | 3:33 → 3:28 |
 | RPE | Z2 4~5, 인터벌 7~8 |
-| 보정 파워 (업힐) | 건조한 날 기준선 대비 |
-| 회차 페이스 | 마지막 회차 급락 없음 |
+| 보정 파워 (업힐) | 맑은 날 기준 대비 |
+| 랩 페이스 | 마지막 랩 크래시 없이 |
 
 ---
 
@@ -130,9 +155,10 @@ MCP 없이 휴리스틱만 쓸 때는 `analyze-cycle/SKILL.ko.md` 내부 표 참
 
 | 실수 | 올바른 접근 |
 |------|-------------|
-| 역풍 날 PR과 기록 파워만 비교 | 무풍 등가 + **시간** |
-| 프로필 체중만 속도계에 입력 | 몸+바이크 합인지 확인 |
-| latlng 없는 활동 풍속 보정 | 시간 위주, 보정 신뢰도 낮음 명시 |
-| 평지 W로 FTP | 업힐 보정 W만 |
+| 역풍 PR 날 vs 기록 파워만 | 보정 파워 + **시간** |
+| 속도계에 프로필 체중만 | 몸+바이크 합 확인 |
+| latlng 없이 풍속 보정 | 시간 우선, 신뢰도 낮음 명시 |
+| 평지 W로 FTP | 업힐 보정 파워만 |
+| PR 비교에 analyze-cycle | **compare-cycle** 사용 |
 
-스킬 원문: `analyze-cycle/SKILL.ko.md`
+스킬 원본: `analyze-cycle/SKILL.ko.md`, `compare-cycle/SKILL.ko.md`

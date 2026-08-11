@@ -21,7 +21,7 @@ cd ride-coach
 mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ```
 
 ### 2. Strava MCP
@@ -36,7 +36,7 @@ ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
 mkdir -p ~/.claude/skills
 ln -sf "$(pwd)" ~/.claude/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.claude/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.claude/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.claude/skills/compare-cycle
 ```
 
 ---
@@ -58,7 +58,7 @@ ln -sf "$(pwd)/weather-power" ~/.claude/skills/weather-power
 | 스킬 | 용도 |
 |------|------|
 | `ride-coach` | 허브·라이딩 코치 |
-| `analyze-cycle` | 세그먼트·코스·FTP |
-| `weather-power` | 무풍 등가 파워 |
+| `analyze-cycle` | 단일 라이딩·세그먼트 + 보정 파워 |
+| `compare-cycle` | 날짜·PR 비교 |
 
 세 개 모두 링크 권장.

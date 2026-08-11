@@ -24,7 +24,7 @@ cd ride-coach
 mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ```
 
 **Strava MCP** → [setup-strava-mcp.md](./setup-strava-mcp.md) **required**.
@@ -50,27 +50,20 @@ node scripts/correct-power.mjs --format json < examples/sample-input.json
 Check Strava MCP health and summarize my last 3 rides
 ```
 
-### B. Segment analysis
+### B. Single ride analysis
 
 ```
-analyze-cycle: Top 5 segment efforts from my recent ride in a table.
-Time, grade, recorded power. State that it's estimated power.
+/analyze-cycle: Yesterday ride — weather, recorded power, corrected power,
+top segment efforts in a table. State estimated power limits.
 ```
 
-### C. Wind correction
+### C. PR comparison
 
 ```
-weather-power: Calculate zero-wind equivalent power for yesterday (or recent) ride.
-Use Korean terms: 기록 파워, 바람 보정, 무풍 등가 파워.
-```
-
-### D. PR comparison (full package)
-
-```
-Compare PR segment vs this ride:
+/compare-cycle: PR segment vs this ride:
 - Segment time (priority)
-- Weather (temp, wind speed, direction)
-- Zero-wind equivalent power
+- Weather (temp, wind, direction)
+- Corrected power diff
 One-line conclusion + error range
 ```
 
@@ -92,7 +85,7 @@ One-line conclusion + error range
 ## 5. Analysis priority (all skills)
 
 1. **Segment time** — most reliable
-2. **Zero-wind equivalent power** (weather-power)
+2. **Corrected power** (보정 파워) — built into analyze-cycle / compare-cycle
 3. **Recorded power** alone — forbidden
 4. Flat raw W → FTP back-calc — forbidden
 

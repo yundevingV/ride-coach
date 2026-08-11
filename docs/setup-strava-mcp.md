@@ -26,7 +26,7 @@ cd ride-coach
 mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.cursor/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ```
 
 Claude Code:
@@ -35,7 +35,7 @@ Claude Code:
 mkdir -p ~/.claude/skills
 ln -sf "$(pwd)" ~/.claude/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.claude/skills/analyze-cycle
-ln -sf "$(pwd)/weather-power" ~/.claude/skills/weather-power
+ln -sf "$(pwd)/compare-cycle" ~/.claude/skills/compare-cycle
 ```
 
 ---
@@ -112,14 +112,14 @@ Success: athlete id, recent Ride list JSON.
 | Skill | Role |
 |-------|------|
 | **ride-coach** | Hub, entry point |
-| **analyze-cycle** | Segments, courses, FTP, training roadmap |
-| **weather-power** | Wind/surface → **zero-wind equivalent power** |
+| **analyze-cycle** | Single ride / segment — weather + corrected power |
+| **compare-cycle** | PR vs today, cross-day comparison |
 
 Example requests:
 
-- "Compare recent segment PR on course X" → analyze-cycle
-- "Yesterday ride wind-corrected power" → weather-power
-- "PR day vs today: segment time + zero-wind power" → both
+- "Yesterday ride analysis" → analyze-cycle
+- "Recent segment PR on course X" → analyze-cycle
+- "PR day vs today: time + corrected power" → compare-cycle
 
 ---
 
