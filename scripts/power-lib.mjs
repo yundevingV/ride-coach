@@ -180,6 +180,9 @@ export function buildPointsFromSlice(streams, start, end, weather, massKg) {
     const wRaw = watts?.[i] ?? 0;
     const dWind = aeroDeltaW(v, wPar);
     const dSurf = surfaceDeltaW(v, g, massKg, wet);
+    // Signed dWind for display (역풍 + / 순풍 −). 보정 파워 uses |dWind| so
+    // tailwind segments correct upward (recorded low → true effort higher).
+    const windAdj = Math.abs(dWind);
     points.push({
       vMps: v,
       grade: g,
@@ -187,7 +190,7 @@ export function buildPointsFromSlice(streams, start, end, weather, massKg) {
       watts: wRaw,
       windDeltaW: dWind,
       surfaceDeltaW: dSurf,
-      zeroWindW: wRaw + (dWind + dSurf) / (1 - LOSS),
+      zeroWindW: wRaw + (windAdj + dSurf) / (1 - LOSS),
       headwind: wPar > 0.5,
     });
   }

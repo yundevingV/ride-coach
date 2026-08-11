@@ -90,11 +90,12 @@ async function main() {
       const wPar = windParallelKmh(p.bearingDeg, weather.windFromDeg, weather.windKmh) / 3.6;
       const dWind = aeroDeltaW(p.vMps, wPar);
       const dSurf = surfaceDeltaW(p.vMps, p.grade ?? 0, massKg, wet);
+      const windAdj = Math.abs(dWind);
       return {
         ...p,
         windDeltaW: dWind,
         surfaceDeltaW: dSurf,
-        zeroWindW: p.watts + (dWind + dSurf) / (1 - LOSS),
+        zeroWindW: p.watts + (windAdj + dSurf) / (1 - LOSS),
         headwind: wPar > 0.5,
       };
     });
