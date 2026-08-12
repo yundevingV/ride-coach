@@ -33,7 +33,7 @@ Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 ```
 - [ ] 0. Strava MCP (health)
 - [ ] 1. Classify request
-- [ ] 2. get_activity_details + get_activity_streams + `get_athlete_profile` (FTP)
+- [ ] 2. get_activity_details + get_activity_streams (`format: "arrays"`, include **latlng** in `stream_types`) + `get_athlete_profile` (FTP). No latlng → `docs/manual-strava-data.md` **When GPS is missing**
 - [ ] 3. Save activity JSON + streams JSON to temp files
 - [ ] 4. scripts/segment-correct-power.mjs  ← REQUIRED (segments + **peak power**)
 - [ ] 5. Paste script markdown — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
@@ -74,7 +74,7 @@ Always include this block **even when** segment_efforts is empty (whole-ride ana
 
 | Type | Tools |
 |------|-------|
-| Specific ride / course | `get_activity_details` → `get_activity_streams` |
+| Specific ride / course | `get_activity_details` → `get_activity_streams` (**arrays** + latlng) |
 | Segment search | `explore_segments`, `get_segment_details`, `list_my_segment_efforts` |
 | FTP hint | uphill corrected W + `get_athlete_profile` |
 

@@ -143,8 +143,25 @@ Strava MCP health 확인해줘
 
 ### streams에 `latlng` 없음
 
-- 풍속 보정 신뢰도 **대폭 하락**
-- 세그먼트 **시간** 위주로 분석 (analyze-cycle 기본 원칙)
+**먼저 MCP 호출 방식을 확인하세요.** Strava에는 GPS가 있는데 조회만 잘못된 경우가 많습니다.
+
+```json
+get_activity_streams({
+  "activity_id": 12345678,
+  "format": "arrays",
+  "stream_types": ["latlng", "velocity_smooth", "grade_smooth", "watts", "time"]
+})
+```
+
+응답 `metadata.returned_types`에 **`latlng` 포함** → 정상. `segment-correct-power.mjs` 실행.
+
+| 증상 | 원인 | 조치 |
+|------|------|------|
+| `returned_types`에 latlng 없음 | 실내·수동 활동, 또는 업로드 파일에 GPS 없음 | [manual-strava-data.ko.md](./manual-strava-data.ko.md) **GPS 없을 때** |
+| latlng 요청했는데도 없음 (실외 라이딩) | MCP `types`만 쓰고 `format`/`stream_types` 누락 | 위 **arrays** 형식으로 재요청 |
+| `external_id`가 `stripped_*.fit` | Riduck 등 **출발/도착 GPS 가림** — Strava streams에는 GPS **남아 있는 경우 많음** | arrays 재요청 후 보정 |
+
+latlng를 **정말** 못 구하면 → 풍속 보정 신뢰도 **하락** → 세그먼트 **시간** 우선. 대체 절차는 [manual-strava-data.ko.md](./manual-strava-data.ko.md).
 
 ### 체중·파워가 이상함
 

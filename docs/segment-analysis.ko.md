@@ -157,7 +157,7 @@ effort별 보정 파워 + 날씨 요약.
 |------|-------------|
 | 역풍 PR 날 vs 기록 파워만 | 보정 파워 + **시간** |
 | 속도계에 프로필 체중만 | 몸+바이크 합 확인 |
-| latlng 없이 풍속 보정 | 시간 우선, 신뢰도 낮음 명시 |
+| latlng 없이 풍속 보정 | MCP **arrays** 재요청 → [manual-strava-data.ko.md](./manual-strava-data.ko.md) **GPS 없을 때** |
 | 평지 W로 FTP | 업힐 보정 파워만 |
 | PR 비교에 analyze-cycle | **compare-cycle** 사용 |
 

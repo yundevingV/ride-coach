@@ -157,7 +157,7 @@ Heuristic fallback (no streams) → `analyze-cycle/SKILL.md`.
 |---------|-------------------|
 | PR on headwind day vs recorded W only | Corrected power + **time** |
 | Profile weight only in speedometer | Confirm body+bike total |
-| Wind correction without latlng | Time-first, low confidence stated |
+| Wind correction without latlng | Retry MCP **arrays** → [manual-strava-data.md](./manual-strava-data.md) **When GPS is missing** |
 | FTP from flat W | Uphill corrected W only |
 | PR compare with analyze-cycle | Use **compare-cycle** |
 

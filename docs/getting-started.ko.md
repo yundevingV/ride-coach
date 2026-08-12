@@ -25,6 +25,7 @@ mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
+ln -sf "$(pwd)/estimate-ftp" ~/.cursor/skills/estimate-ftp
 ```
 
 **Strava MCP** → [setup-strava-mcp.ko.md](./setup-strava-mcp.ko.md) **필수**.
@@ -67,6 +68,15 @@ Strava MCP health 확인하고, 최근 라이딩 3개만 요약해줘
 한 줄 결론 + 오차 범위
 ```
 
+### D. FTP 추정
+
+```
+/estimate-ftp 또는 /predict-ftp:
+- 최근 10회 업힐·평지 보정 구간
+- 프로필 FTP vs 추정 범위
+- 신뢰도 (Z2만 있으면 low)
+```
+
 ---
 
 ## 4. 체중 설정 (추정 파워 사용자 필독)
@@ -86,8 +96,9 @@ Strava MCP health 확인하고, 최근 라이딩 3개만 요약해줘
 
 1. **세그먼트 시간** — 가장 신뢰
 2. **보정 파워** — analyze-cycle / compare-cycle 내장
-3. **기록 파워** 단독 비교 — 금지
-4. 평지 raw W로 FTP 역산 — 금지
+3. **FTP 추정** — estimate-ftp (`/predict-ftp`)
+4. **기록 파워** 단독 비교 — 금지
+5. 평지 raw W로 FTP 역산 — 금지
 
 자세한 세그먼트 워크플로 → [segment-analysis.ko.md](./segment-analysis.ko.md)
 

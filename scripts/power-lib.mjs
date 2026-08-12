@@ -301,7 +301,7 @@ export function buildCorrectedSeries(streams, weather, massKg) {
     const wPar = windParallelKmh(b, weather.windFromDeg, weather.windKmh) / 3.6;
     const dWind = aeroDeltaW(v, wPar);
     const dSurf = surfaceDeltaW(v, g, massKg, wet);
-    corrected.push(wRaw + (dWind + dSurf) / (1 - LOSS));
+    corrected.push(wRaw + (Math.abs(dWind) + dSurf) / (1 - LOSS));
   }
   return { recorded, corrected, timeSec };
 }

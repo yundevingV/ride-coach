@@ -22,6 +22,7 @@ Strava + Open-Meteo **세그먼트·코스·파워** 분석 허브.
 |------|-----------|
 | **analyze-cycle** | 단일 라이딩·세그먼트·코스 — 날씨 + **보정 파워** 포함 |
 | **compare-cycle** | PR vs 오늘, 같은 세그먼트 다른 날, 두 라이딩 비교 |
+| **estimate-ftp** | 업힐·평지 보정 구간으로 FTP 추정 — `/predict-ftp`, `/estimate-ftp` |
 
 ## 라우팅
 
@@ -29,6 +30,7 @@ Strava + Open-Meteo **세그먼트·코스·파워** 분석 허브.
 |-------------|------|
 | 어제 라이딩, 이 세그먼트, 업힌 코스 | `analyze-cycle` |
 | PR 비교, 저번주 vs 오늘, 같은 언덕 | `compare-cycle` |
+| FTP 예상, predict-ftp, 내 FTP | `estimate-ftp` |
 | 애매 | 질문 또는 `analyze-cycle` 기본 |
 
 ## 용어 (사용자 응답)

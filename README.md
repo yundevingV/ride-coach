@@ -18,6 +18,7 @@ mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
+ln -sf "$(pwd)/estimate-ftp" ~/.cursor/skills/estimate-ftp
 ```
 
 **Required:** [Strava MCP + OAuth](docs/setup-strava-mcp.md) — without it, agents cannot fetch your activities.
@@ -28,6 +29,7 @@ In Cursor chat, invoke skills with slash commands or natural language:
 /ride-coach 최근 라이딩 세그먼트 상위 5개 정리해줘
 /analyze-cycle 어제 라이딩 분석해줘
 /compare-cycle PR 세그먼트와 이번 라이딩 비교해줘
+/estimate-ftp 어제 라이딩으로 FTP 추정해줘
 ```
 
 Or install the power-correction script only:
@@ -80,6 +82,7 @@ Full onboarding: [docs/getting-started.md](docs/getting-started.md)
 | `ride-coach` | `/ride-coach`, "라이딩코치" | Hub — routes to analyze-cycle or compare-cycle |
 | `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | Single ride / segment — weather + corrected power |
 | `compare-cycle` | `/compare-cycle`, "PR 비교" | Same segment or rides across days |
+| `estimate-ftp` | `/estimate-ftp`, `/predict-ftp`, "FTP 추정" | FTP from recent uphill + flat corrected windows |
 
 ## Strava MCP Tools
 
@@ -209,6 +212,7 @@ ride-coach/
 ├── SKILL.md                 # ride-coach (hub)
 ├── analyze-cycle/SKILL.md   # single ride / segment
 ├── compare-cycle/SKILL.md   # cross-day / PR comparison
+├── estimate-ftp/SKILL.md    # FTP estimate from peaks
 ├── scripts/correct-power.mjs
 ├── examples/sample-input.json
 ├── docs/

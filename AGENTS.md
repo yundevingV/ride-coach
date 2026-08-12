@@ -11,6 +11,7 @@
 | ride-coach (hub) | `SKILL.md` |
 | analyze-cycle | `analyze-cycle/SKILL.md` — single ride / segment |
 | compare-cycle | `compare-cycle/SKILL.md` — cross-day / PR comparison |
+| estimate-ftp | `estimate-ftp/SKILL.md` — FTP from uphill + flat corrected windows |
 
 ## New users
 
@@ -42,4 +43,7 @@ node scripts/segment-correct-power.mjs --activity … --streams … --ftp 178 �
 
 # Whole ride only
 node scripts/correct-power.mjs --lat … --lng … --date … --hour … --streams …
+
+# FTP estimate (estimate-ftp / predict-ftp) — prefer --manifest
+node scripts/estimate-ftp.mjs --manifest … --profile-ftp 178 --rider 74 --bike 10
 ```

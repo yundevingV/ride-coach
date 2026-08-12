@@ -143,8 +143,25 @@ Example requests:
 
 ### No `latlng` in streams
 
-- Wind correction confidence **drops sharply**
-- Analyze by segment **time** (analyze-cycle default)
+**Check the MCP call first.** GPS is often on Strava; the fetch params may be wrong.
+
+```json
+get_activity_streams({
+  "activity_id": 12345678,
+  "format": "arrays",
+  "stream_types": ["latlng", "velocity_smooth", "grade_smooth", "watts", "time"]
+})
+```
+
+If `metadata.returned_types` includes **`latlng`** → OK. Run `segment-correct-power.mjs`.
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| No latlng in `returned_types` | Indoor/manual activity, or upload has no GPS | [manual-strava-data.md](./manual-strava-data.md) **When GPS is missing** |
+| Outdoor ride, still no latlng | MCP called with `types` only, missing `format` / `stream_types` | Re-fetch with **arrays** format above |
+| `external_id` is `stripped_*.fit` | Riduck etc. **hide start/end** — streams often **still have GPS** | Re-fetch with arrays, then correct |
+
+If latlng is **truly** unavailable → lower wind-correction confidence → segment **time** first. Fallbacks: [manual-strava-data.md](./manual-strava-data.md).
 
 ### Weight / power looks wrong
 

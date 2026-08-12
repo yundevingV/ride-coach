@@ -11,6 +11,7 @@
 | ride-coach (허브) | `SKILL.ko.md` |
 | analyze-cycle | `analyze-cycle/SKILL.ko.md` — 단일 라이딩·세그먼트 |
 | compare-cycle | `compare-cycle/SKILL.ko.md` — 날짜·PR 비교 |
+| estimate-ftp | `estimate-ftp/SKILL.ko.md` — 업힐·평지 보정 구간 FTP 추정 |
 
 ## 신규 사용자
 
@@ -42,4 +43,7 @@ node scripts/segment-correct-power.mjs --activity … --streams … --ftp 178 �
 
 # 전체 라이딩만
 node scripts/correct-power.mjs --lat … --lng … --date … --hour … --streams …
+
+# FTP 추정 (estimate-ftp / predict-ftp) — manifest 권장
+node scripts/estimate-ftp.mjs --manifest … --profile-ftp 178 --rider 74 --bike 10
 ```

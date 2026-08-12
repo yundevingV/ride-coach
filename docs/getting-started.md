@@ -25,6 +25,7 @@ mkdir -p ~/.cursor/skills
 ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
+ln -sf "$(pwd)/estimate-ftp" ~/.cursor/skills/estimate-ftp
 ```
 
 **Strava MCP** → [setup-strava-mcp.md](./setup-strava-mcp.md) **required**.
@@ -67,6 +68,15 @@ top segment efforts in a table. State estimated power limits.
 One-line conclusion + error range
 ```
 
+### D. FTP estimate
+
+```
+/estimate-ftp or /predict-ftp:
+- Recent 10 rides: uphill + flat corrected windows
+- Profile FTP vs estimate range
+- Confidence (low if Z2-only history)
+```
+
 ---
 
 ## 4. Weight settings (estimated power users)
@@ -86,8 +96,9 @@ One-line conclusion + error range
 
 1. **Segment time** — most reliable
 2. **Corrected power** (보정 파워) — built into analyze-cycle / compare-cycle
-3. **Recorded power** alone — forbidden
-4. Flat raw W → FTP back-calc — forbidden
+3. **FTP estimate** — estimate-ftp (`/predict-ftp`)
+4. **Recorded power** alone — forbidden
+5. Flat raw W → FTP back-calc — forbidden
 
 Full segment workflow → [segment-analysis.md](./segment-analysis.md)
 

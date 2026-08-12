@@ -22,6 +22,7 @@ Strava MCP required — `docs/setup-strava-mcp.md`
 |-------|-------------|
 | **analyze-cycle** | Single ride, segment, or course — weather + **corrected power** included |
 | **compare-cycle** | PR vs today, same segment across days, two rides |
+| **estimate-ftp** | FTP from uphill + flat corrected windows — `/predict-ftp`, `/estimate-ftp` |
 
 ## Routing
 
@@ -29,6 +30,7 @@ Strava MCP required — `docs/setup-strava-mcp.md`
 |-------------|-------|
 | Yesterday ride, this segment, uphill course | `analyze-cycle` |
 | PR comparison, last week vs today, same climb | `compare-cycle` |
+| FTP estimate, predict FTP, "내 FTP" | `estimate-ftp` |
 | Unclear | Ask or default to `analyze-cycle` |
 
 ## Terminology (Korean to users)

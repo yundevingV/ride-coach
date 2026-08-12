@@ -32,7 +32,7 @@ Strava MCP — `docs/setup-strava-mcp.ko.md`. MCP 없음 → `docs/manual-strava
 ```
 - [ ] 0. Strava MCP (health)
 - [ ] 1. 요청 분류
-- [ ] 2. get_activity_details + get_activity_streams + `get_athlete_profile` (FTP)
+- [ ] 2. get_activity_details + get_activity_streams (`format: "arrays"`, `stream_types`에 **latlng** 포함) + `get_athlete_profile` (FTP). latlng 없으면 → `docs/manual-strava-data.ko.md` **GPS 없을 때**
 - [ ] 3. activity / streams JSON 임시 저장
 - [ ] 4. scripts/segment-correct-power.mjs ← 필수 (**구간 최고 파워 + 세그먼트**)
 - [ ] 5. 스크립트 markdown 포함 — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
@@ -72,7 +72,7 @@ streams `watts` + `time` rolling 최고 평균. 스크립트: `### 구간 최고
 
 | 타입 | 도구 |
 |------|------|
-| 라이딩·코스 | `get_activity_details` → `get_activity_streams` |
+| 라이딩·코스 | `get_activity_details` → `get_activity_streams` (**arrays** + latlng) |
 | 세그먼트 검색 | `explore_segments`, `get_segment_details` |
 | FTP 힌트 | 업힐 보정 파워 + `get_athlete_profile` |
 
