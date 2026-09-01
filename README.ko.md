@@ -19,6 +19,7 @@ ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ln -sf "$(pwd)/estimate-ftp" ~/.cursor/skills/estimate-ftp
+ln -sf "$(pwd)/recap-month" ~/.cursor/skills/recap-month
 ```
 
 **필수:** [Strava MCP + OAuth](docs/setup-strava-mcp.ko.md) — 없으면 활동 조회 불가.
@@ -30,6 +31,7 @@ Cursor 채팅에서 slash 또는 자연어로 호출:
 /analyze-cycle 어제 라이딩 분석해줘
 /compare-cycle PR 세그먼트와 이번 라이딩 비교해줘
 /estimate-ftp 어제 라이딩 FTP 추정해줘
+/recap-month 8월 라이딩 정산
 ```
 
 파워 보정 스크립트만 설치:
@@ -83,6 +85,7 @@ node scripts/correct-power.mjs \
 | `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | 단일 라이딩·세그먼트 — 날씨 + 보정 파워 |
 | `compare-cycle` | `/compare-cycle`, "PR 비교" | 같은 세그먼트·날짜 간 비교 |
 | `estimate-ftp` | `/estimate-ftp`, `/predict-ftp`, "FTP 추정" | 최근 10회 업힐·평지 보정 구간 FTP |
+| `recap-month` | `/recap-month`, "월정산" | 월별 합산·주간 볼륨·핵심 2~3라이드 |
 
 ## Strava MCP 도구
 
@@ -213,6 +216,7 @@ ride-coach/
 ├── analyze-cycle/SKILL.md   # 단일 라이딩·세그먼트
 ├── compare-cycle/SKILL.md   # 날짜·PR 비교
 ├── estimate-ftp/SKILL.md    # FTP 추정
+├── recap-month/SKILL.md     # 월정산
 ├── scripts/correct-power.mjs
 ├── examples/sample-input.json
 ├── docs/

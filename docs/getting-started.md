@@ -26,6 +26,7 @@ ln -sf "$(pwd)" ~/.cursor/skills/ride-coach
 ln -sf "$(pwd)/analyze-cycle" ~/.cursor/skills/analyze-cycle
 ln -sf "$(pwd)/compare-cycle" ~/.cursor/skills/compare-cycle
 ln -sf "$(pwd)/estimate-ftp" ~/.cursor/skills/estimate-ftp
+ln -sf "$(pwd)/recap-month" ~/.cursor/skills/recap-month
 ```
 
 **Strava MCP** → [setup-strava-mcp.md](./setup-strava-mcp.md) **required**.
@@ -77,6 +78,13 @@ One-line conclusion + error range
 - Confidence (low if Z2-only history)
 ```
 
+### E. Monthly recap
+
+```
+/recap-month: This month (or named month) — ride count, km, time,
+weekly volume, 2–3 key rides with corrected peak power. Keep it short.
+```
+
 ---
 
 ## 4. Weight settings (estimated power users)
@@ -97,8 +105,9 @@ One-line conclusion + error range
 1. **Segment time** — most reliable
 2. **Corrected power** (보정 파워) — built into analyze-cycle / compare-cycle
 3. **FTP estimate** — estimate-ftp (`/predict-ftp`)
-4. **Recorded power** alone — forbidden
-5. Flat raw W → FTP back-calc — forbidden
+4. **Monthly recap** — recap-month (`/recap-month`)
+5. **Recorded power** alone — forbidden
+6. Flat raw W → FTP back-calc — forbidden
 
 Full segment workflow → [segment-analysis.md](./segment-analysis.md)
 
