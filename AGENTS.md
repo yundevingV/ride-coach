@@ -12,6 +12,7 @@
 | analyze-cycle | `analyze-cycle/SKILL.md` — single ride / segment |
 | compare-cycle | `compare-cycle/SKILL.md` — cross-day / PR comparison |
 | estimate-ftp | `estimate-ftp/SKILL.md` — FTP from uphill + flat corrected windows |
+| recap-month | `recap-month/SKILL.md` — monthly totals + 2–3 key rides |
 
 ## New users
 

@@ -2,8 +2,8 @@
 name: ride-coach
 description: >-
   Strava cycling AI coach. Segments, courses, FTP, wind/surface corrected
-  power, PR comparison, training. Triggers: "ride-coach", "라이딩코치",
-  "세그먼트", "보정 파워", "FTP", "PR 비교". read-only.
+  power, PR comparison, monthly recap, training. Triggers: "ride-coach",
+  "라이딩코치", "세그먼트", "보정 파워", "FTP", "PR 비교", "월정산". read-only.
 ---
 
 # Ride Coach (Cycling AI Coach)
@@ -23,6 +23,7 @@ Strava MCP required — `docs/setup-strava-mcp.md`
 | **analyze-cycle** | Single ride, segment, or course — weather + **corrected power** included |
 | **compare-cycle** | PR vs today, same segment across days, two rides |
 | **estimate-ftp** | FTP from uphill + flat corrected windows — `/predict-ftp`, `/estimate-ftp` |
+| **recap-month** | One month totals + weekly volume + 2–3 key rides — `/recap-month`, "월정산" |
 
 ## Routing
 
@@ -31,6 +32,7 @@ Strava MCP required — `docs/setup-strava-mcp.md`
 | Yesterday ride, this segment, uphill course | `analyze-cycle` |
 | PR comparison, last week vs today, same climb | `compare-cycle` |
 | FTP estimate, predict FTP, "내 FTP" | `estimate-ftp` |
+| This month, 월정산, August recap | `recap-month` |
 | Unclear | Ask or default to `analyze-cycle` |
 
 ## Terminology (Korean to users)
@@ -55,6 +57,7 @@ Do not say 무풍 등가, raw W to users.
 - "ride-coach recent segments" → analyze-cycle
 - "yesterday ride analysis" → analyze-cycle
 - "PR vs today climb" → compare-cycle
+- "8월 라이딩 정산" → recap-month
 
 ## Docs
 

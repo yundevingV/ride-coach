@@ -12,6 +12,7 @@
 | analyze-cycle | `analyze-cycle/SKILL.ko.md` — 단일 라이딩·세그먼트 |
 | compare-cycle | `compare-cycle/SKILL.ko.md` — 날짜·PR 비교 |
 | estimate-ftp | `estimate-ftp/SKILL.ko.md` — 업힐·평지 보정 구간 FTP 추정 |
+| recap-month | `recap-month/SKILL.ko.md` — 월별 합산·핵심 라이드 |
 
 ## 신규 사용자
 
