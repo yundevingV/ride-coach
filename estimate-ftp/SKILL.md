@@ -10,7 +10,7 @@ description: >-
 
 **한국어:** [SKILL.ko.md](SKILL.ko.md)
 
-**FTP 추정** — 최근 **~10회** 라이딩에서 **보정 파워** threshold 구간을 모아 추정.
+**FTP 추정** — 최근 **12주**(최대 **20회**) 라이딩에서 **보정 파워** threshold 구간을 모아 추정.
 
 Single-ride deep dive → **`analyze-cycle`**. Cross-day PR → **`compare-cycle`**.
 
@@ -36,15 +36,26 @@ get_activity_streams({
 
 Do not use whole-ride average or Z2 blocks. Intensity gate excludes recovery rides.
 
+## Lookback (default)
+
+**12 weeks**, not the last 10 rides. A short recent list is often Z2-only and starves the uphill pool. Twelve weeks stays close to current fitness and usually includes hard rides.
+
+1. `after` = now − **84 days**. Page `get_recent_activities` until that window is covered.
+2. Keep outdoor rides: `trainer` false, `moving_time` ≥ **2400** s (40 min).
+3. Cap **20** rides. If more qualify, keep **signal rides** first (`weighted_average_watts` ≥ 70% of profile FTP, or `total_elevation_gain` ≥ 250 m), newest first, then fill remaining slots with the most recent other rides.
+4. If fewer than **6** qualify, extend `after` to **168 days** (24 weeks). Still cap 20. Do not look further back.
+5. Do not drop `weighted_average_watts`, `total_elevation_gain`, `trainer`, or `moving_time` when using `fields`.
+6. State the window in the summary: `12주 · N회` (or `24주` if extended).
+
 ## Workflow
 
 ```
 - [ ] 0. Strava MCP (health)
 - [ ] 1. get_athlete_profile (weight, ftp)
-- [ ] 2. get_recent_activities — last 10 outdoor rides, moving_time ≥ 40 min
+- [ ] 2. get_recent_activities — 12 weeks, outdoor, ≥40 min, cap 20 (see Lookback)
 - [ ] 3. Per ride: get_activity_details + streams (arrays, latlng)
 - [ ] 4. Build manifest JSON → scripts/estimate-ftp.mjs --manifest
-- [ ] 5. Report uphill pool + flat pool + weighted estimate + confidence
+- [ ] 5. Report window + uphill pool + flat pool + weighted estimate + confidence
 ```
 
 ## Script (required)
@@ -129,5 +140,5 @@ Always state **±5–10 W** without a dedicated 20 min test.
 ## Examples
 
 - `/estimate-ftp` or `/predict-ftp`
-- "내 FTP 얼마야" (scan last 10 rides)
+- "내 FTP 얼마야" (12-week window, up to 20 rides)
 - "최근 라이딩으로 FTP 추정"

@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
- * FTP estimate from recent rides: uphill + flat threshold windows (corrected power).
+ * FTP estimate from a ride manifest: uphill + flat threshold windows (corrected power).
+ * Default sample (chosen before this script): last 12 weeks, outdoor ≥40 min, cap 20.
+ * Prefer signal rides (NP ≥70% FTP or gain ≥250 m) when the window has more than 20.
+ * Fewer than 6 qualifying rides → extend to 24 weeks, still cap 20.
  */
 
 import { readFile } from 'node:fs/promises';

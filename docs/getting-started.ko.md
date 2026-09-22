@@ -73,7 +73,7 @@ Strava MCP health 확인하고, 최근 라이딩 3개만 요약해줘
 
 ```
 /estimate-ftp 또는 /predict-ftp:
-- 최근 10회 업힐·평지 보정 구간
+- 최근 12주, 최대 20회 업힐·평지 보정 구간
 - 프로필 FTP vs 추정 범위
 - 신뢰도 (Z2만 있으면 low)
 ```

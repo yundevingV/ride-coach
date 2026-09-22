@@ -73,7 +73,7 @@ One-line conclusion + error range
 
 ```
 /estimate-ftp or /predict-ftp:
-- Recent 10 rides: uphill + flat corrected windows
+- Last 12 weeks, up to 20 outdoor rides: uphill + flat corrected windows
 - Profile FTP vs estimate range
 - Confidence (low if Z2-only history)
 ```

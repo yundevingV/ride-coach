@@ -84,7 +84,7 @@ Full onboarding: [docs/getting-started.md](docs/getting-started.md)
 | `ride-coach` | `/ride-coach`, "라이딩코치" | Hub — routes to analyze-cycle or compare-cycle |
 | `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | Single ride / segment — weather + corrected power |
 | `compare-cycle` | `/compare-cycle`, "PR 비교" | Same segment or rides across days |
-| `estimate-ftp` | `/estimate-ftp`, `/predict-ftp`, "FTP 추정" | FTP from recent uphill + flat corrected windows |
+| `estimate-ftp` | `/estimate-ftp`, `/predict-ftp`, "FTP 추정" | FTP from 12-week uphill + flat corrected windows (max 20 rides) |
 | `recap-month` | `/recap-month`, "월정산" | Monthly totals + weekly volume + 2–3 key rides |
 
 ## Strava MCP Tools

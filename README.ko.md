@@ -84,7 +84,7 @@ node scripts/correct-power.mjs \
 | `ride-coach` | `/ride-coach`, "라이딩코치" | 허브 — analyze-cycle / compare-cycle 라우팅 |
 | `analyze-cycle` | `/analyze-cycle`, "세그먼트 분석" | 단일 라이딩·세그먼트 — 날씨 + 보정 파워 |
 | `compare-cycle` | `/compare-cycle`, "PR 비교" | 같은 세그먼트·날짜 간 비교 |
-| `estimate-ftp` | `/estimate-ftp`, `/predict-ftp`, "FTP 추정" | 최근 10회 업힐·평지 보정 구간 FTP |
+| `estimate-ftp` | `/estimate-ftp`, `/predict-ftp`, "FTP 추정" | 최근 12주(최대 20회) 업힐·평지 보정 구간 FTP |
 | `recap-month` | `/recap-month`, "월정산" | 월별 합산·주간 볼륨·핵심 2~3라이드 |
 
 ## Strava MCP 도구
