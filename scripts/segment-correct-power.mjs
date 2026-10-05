@@ -19,6 +19,12 @@ import {
   normalizeStreams,
   summarize,
 } from './power-lib.mjs';
+import {
+  buildRideEnergy,
+  formatEnergyMarkdown,
+  loadFit,
+  segmentEnergyKcal,
+} from './activity-energy.mjs';
 
 function parseArgs() {
   const a = process.argv.slice(2);
@@ -105,17 +111,25 @@ function sectionTitle(section, lang) {
   return '기타 세그먼트';
 }
 
-function formatSegmentTable(rows, lang) {
-  const h =
-    lang === 'en'
+function formatSegmentTable(rows, lang, withKcal = false) {
+  const h = withKcal
+    ? lang === 'en'
+      ? '| Segment | Time | Grade | Recorded W | **Corrected W** | **Est. kcal** |'
+      : '| 세그먼트 | 시간 | 경사 | 기록 파워 | **보정 파워** | **추정 kcal** |'
+    : lang === 'en'
       ? '| Segment | Time | Grade | Recorded W | **Corrected W** |'
       : '| 세그먼트 | 시간 | 경사 | 기록 파워 | **보정 파워** |';
-  const sep = '|----------|------|------|-----------|---------------|';
+  const sep = withKcal
+    ? '|----------|------|------|-----------|---------------|-------------|'
+    : '|----------|------|------|-----------|---------------|';
   const body = rows.map((r) => {
     const grade = r.grade != null ? `${r.grade}%` : '—';
     const rec = r.recordedW ?? '—';
     const cor = r.correctedW ?? '—';
-    return `| ${r.name} | ${formatElapsed(r.elapsedTime)} | ${grade} | ${rec} W | **${cor} W** |`;
+    const kcal = withKcal ? (r.estKcal != null ? `**${r.estKcal}**` : '—') : '';
+    return withKcal
+      ? `| ${r.name} | ${formatElapsed(r.elapsedTime)} | ${grade} | ${rec} W | **${cor} W** | ${kcal} |`
+      : `| ${r.name} | ${formatElapsed(r.elapsedTime)} | ${grade} | ${rec} W | **${cor} W** |`;
   });
   return [h, sep, ...body].join('\n');
 }
@@ -148,10 +162,15 @@ function formatMarkdown(out, lang) {
   }
 
   const order = ['warmup', 'lap1', 'lap2', 'return', 'other'];
+  const withKcal = Boolean(out.energy?.fitAligned && !out.energy?.skipped);
   for (const sec of order) {
     const rows = out.segments.filter((s) => s.section === sec);
     if (!rows.length) continue;
-    lines.push(`### ${sectionTitle(sec, lang)}`, '', formatSegmentTable(rows, lang), '');
+    lines.push(`### ${sectionTitle(sec, lang)}`, '', formatSegmentTable(rows, lang, withKcal), '');
+  }
+
+  if (out.energy) {
+    lines.push(formatEnergyMarkdown(out.energy, lang));
   }
 
   lines.push(
@@ -174,8 +193,8 @@ async function main() {
   if (!args.activity || !args.streams) {
     console.error(
       lang === 'ko'
-        ? '사용법: --activity ACTIVITY.json --streams STREAMS.json --lat --lng [--date] [--hour] [--rider] [--bike] [--format json|markdown]'
-        : 'Usage: --activity ACTIVITY.json --streams STREAMS.json --lat --lng [--date] [--hour] [--rider] [--bike] [--format json|markdown]'
+        ? '사용법: --activity ACTIVITY.json --streams STREAMS.json [--fit FILE.fit] [--lat] [--lng] [--date] [--hour] [--rider] [--bike] [--max-hr] [--age] [--sex] [--format json|markdown]'
+        : 'Usage: --activity ACTIVITY.json --streams STREAMS.json [--fit FILE.fit] [--lat] [--lng] [--date] [--hour] [--rider] [--bike] [--max-hr] [--age] [--sex] [--format json|markdown]'
     );
     process.exit(1);
   }
@@ -200,10 +219,49 @@ async function main() {
   const peaks = computePeakPowers(streams, weather, massKg, ftp);
 
   const grouped = efforts.length ? groupSections(efforts) : [];
-  const segments = grouped.map(({ effort, section }) => ({
-    section,
-    ...correctEffort(effort, streams, weather, massKg),
-  }));
+  const age = Number(args.age ?? 30);
+  const sex = args.sex ?? 'm';
+  const maxHr = args['max-hr'] ? Number(args['max-hr']) : null;
+  const restingHr = Number(args['resting-hr'] ?? 60);
+
+  let fit = null;
+  if (args.fit) {
+    fit = await loadFit(args.fit);
+  }
+
+  const segments = grouped.map(({ effort, section }) => {
+    const row = {
+      section,
+      ...correctEffort(effort, streams, weather, massKg),
+    };
+    if (fit) {
+      row.estKcal = segmentEnergyKcal(
+        fit,
+        activity,
+        streams,
+        effort,
+        riderKg,
+        age,
+        sex,
+        maxHr,
+        restingHr,
+      );
+    }
+    return row;
+  });
+
+  const energy = fit
+    ? buildRideEnergy({
+        fit,
+        activity,
+        streams,
+        riderKg,
+        age,
+        sex,
+        maxHr,
+        restingHr,
+      })
+    : null;
 
   const surface = (weather.precipDayMm ?? 0) > 5 ? 'wet' : 'dry';
   const out = {
@@ -220,6 +278,7 @@ async function main() {
     peaks,
     ftp,
     segments,
+    energy,
   };
 
   if (format === 'json') {

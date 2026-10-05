@@ -42,6 +42,9 @@
 # 세그먼트별 (analyze-cycle / compare-cycle) — 구간 최고 파워 포함
 node scripts/segment-correct-power.mjs --activity … --streams … --ftp 178 …
 
+# 선택: 같은 라이드 .fit (심박 kcal) — analyze-cycle
+node scripts/segment-correct-power.mjs --activity … --streams … --fit band.fit --max-hr 197 --rider 73 …
+
 # 전체 라이딩만
 node scripts/correct-power.mjs --lat … --lng … --date … --hour … --streams …
 

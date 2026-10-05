@@ -12,5 +12,8 @@
     "example": "node scripts/correct-power.mjs --format json < examples/sample-input.json"
   },
   "keywords": ["cycling", "strava", "coach", "segment", "power", "wind"],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@garmin/fitsdk": "^21.178.0"
+  }
 }

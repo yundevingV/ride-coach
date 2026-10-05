@@ -13,6 +13,7 @@
 | compare-cycle | `compare-cycle/SKILL.md` — cross-day / PR comparison |
 | estimate-ftp | `estimate-ftp/SKILL.md` — FTP from uphill + flat corrected windows |
 | recap-month | `recap-month/SKILL.md` — monthly totals + 2–3 key rides |
+| gpx-segments-route | `~/.cursor/skills/gpx-segments-route/SKILL.md` — bike-path + Strava segment GPX |
 
 ## New users
 
@@ -41,6 +42,9 @@ Do not say 무풍 등가, raw W to users.
 ```bash
 # Per-segment (analyze-cycle / compare-cycle) — includes peak power table
 node scripts/segment-correct-power.mjs --activity … --streams … --ftp 178 …
+
+# Optional same-ride .fit (HR kcal) — analyze-cycle only
+node scripts/segment-correct-power.mjs --activity … --streams … --fit band.fit --max-hr 197 --rider 73 …
 
 # Whole ride only
 node scripts/correct-power.mjs --lat … --lng … --date … --hour … --streams …

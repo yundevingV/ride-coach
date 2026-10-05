@@ -2,8 +2,9 @@
 name: analyze-cycle
 description: >-
   Single Strava ride or segment analysis. Weather, per-segment corrected power,
-  peak power (15s–60min). Triggers: "analyze-cycle", "세그먼트", "1분 파워",
-  "코스 분석", "보정 파워". Compare → compare-cycle. read-only.
+  peak power (15s–60min). Optional Mi Band / watch **.fit** → HR-based kcal + fat/carb
+  estimate. Triggers: "analyze-cycle", "세그먼트", "1분 파워", "코스 분석", "보정 파워",
+  "심박 kcal". Compare → compare-cycle. read-only.
 ---
 
 # Analyze Cycle (Single Ride / Segment)
@@ -36,6 +37,7 @@ Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 - [ ] 2. get_activity_details + get_activity_streams (`format: "arrays"`, include **latlng** in `stream_types`) + `get_athlete_profile` (FTP). No latlng → `docs/manual-strava-data.md` **When GPS is missing**
 - [ ] 3. Save activity JSON + streams JSON to temp files
 - [ ] 4. scripts/segment-correct-power.mjs  ← REQUIRED (segments + **peak power**)
+- [ ] 4b. (optional) User provides **same-ride** `.fit` (Mi Band free exercise, watch) → add `--fit PATH` + `--max-hr` (and `--age` / `--sex` / `--resting-hr` if known). No FIT → skip energy; do **not** use Strava calorie field.
 - [ ] 5. Paste script markdown — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
 - [ ] 6. Cross-validate segment time + one-line conclusion (±10~15W)
 ```
@@ -91,8 +93,22 @@ node ../scripts/segment-correct-power.mjs \
   --format markdown
 ```
 
+Optional energy (HR from FIT, distance/time from Strava):
+
+```bash
+node ../scripts/segment-correct-power.mjs \
+  --activity /tmp/activity.json \
+  --streams /tmp/streams.json \
+  --fit /path/to/band.fit \
+  --rider 73 --bike 10 --ftp 178 \
+  --max-hr 197 --age 30 --sex m --resting-hr 60 \
+  --format markdown
+```
+
 - `--date` / `--hour` optional if `start_date_local` is in activity JSON
 - `--ftp` optional — shows **보정 파워 FTP %** in peak table
+- `--fit` — appends `### 에너지 (FIT 심박 추정)`; segment table adds **추정 kcal** when FIT start aligns with Strava (≤15 min). Mismatch (>15 min) → energy block shows skip warning only (no bogus kcal).
+- Standalone FIT CLI: `../scripts/estimate-activity-energy.mjs --fit … --km … --minutes …`
 - `--format json` for structured output
 - Whole-ride summary only: `../scripts/correct-power.mjs --streams …`
 
@@ -123,9 +139,11 @@ Ride shorter than window → skip that row (script auto-filters).
 
 ### Segment table columns (must include)
 
-| 세그먼트 | 시간 | 경사 | **기록 파워** | **보정 파워** |
+| 세그먼트 | 시간 | 경사 | **기록 파워** | **보정 파워** | (optional) **추정 kcal** |
 
 Grouped by section when script detects laps (출발 / 1회전 / 2회전 / 귀가).
+
+With `--fit`, add energy block after segments (Keytel HR kcal + fat/carb split; label as **추정**).
 
 ## Priority
 

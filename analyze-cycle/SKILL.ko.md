@@ -35,6 +35,7 @@ Strava MCP — `docs/setup-strava-mcp.ko.md`. MCP 없음 → `docs/manual-strava
 - [ ] 2. get_activity_details + get_activity_streams (`format: "arrays"`, `stream_types`에 **latlng** 포함) + `get_athlete_profile` (FTP). latlng 없으면 → `docs/manual-strava-data.ko.md` **GPS 없을 때**
 - [ ] 3. activity / streams JSON 임시 저장
 - [ ] 4. scripts/segment-correct-power.mjs ← 필수 (**구간 최고 파워 + 세그먼트**)
+- [ ] 4b. (선택) **같은 라이드** `.fit`(미밴드 자유 운동·워치) → `--fit` + `--max-hr` 등. FIT 없으면 kcal 생략. Strava 칼로리 필드 미사용.
 - [ ] 5. 스크립트 markdown 포함 — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
 - [ ] 6. 세그먼트 시간 교차 검증 + 한 줄 결론 (±10~15W)
 ```
@@ -89,8 +90,21 @@ node ../scripts/segment-correct-power.mjs \
   --format markdown
 ```
 
-- `--ftp` — 보정 파워 FTP % 표시
+선택 — FIT 심박 + Strava 거리·시간으로 **추정 kcal**:
 
+```bash
+node ../scripts/segment-correct-power.mjs \
+  --activity /tmp/activity.json \
+  --streams /tmp/streams.json \
+  --fit /path/to/band.fit \
+  --rider 73 --bike 10 --ftp 178 \
+  --max-hr 197 --age 30 --sex m --resting-hr 60 \
+  --format markdown
+```
+
+- `--ftp` — 보정 파워 FTP % 표시
+- `--fit` — `### 에너지 (FIT 심박 추정)` 추가. FIT·Strava 시작 시각 15분 이내면 세그먼트 **추정 kcal** 컬럼. 15분 초과 불일치 시 kcal 표 생략·경고만.
+- FIT만 단독: `../scripts/estimate-activity-energy.mjs --fit … --km … --minutes …`
 - activity JSON에 `start_date_local` 있으면 `--date`/`--hour` 생략 가능
 - 전체만 필요할 때: `../scripts/correct-power.mjs --streams …`
 
@@ -120,9 +134,9 @@ node ../scripts/segment-correct-power.mjs \
 
 ### 세그먼트 표 컬럼 (필수)
 
-| 세그먼트 | 시간 | 경사 | **기록 파워** | **보정 파워** |
+| 세그먼트 | 시간 | 경사 | **기록 파워** | **보정 파워** | (선택) **추정 kcal** |
 
-랩 감지 시: 출발 / 1회전 / 2회전 / 귀가 구간으로 구분.
+랩 감지 시: 출발 / 1회전 / 2회전 / 귀가 구간으로 구분. `--fit` 시 에너지 블록은 세그먼트 표 다음(Keytel 심박 kcal·지방/탄수 추정, **추정**으로 표기).
 
 ## 우선순위
 
