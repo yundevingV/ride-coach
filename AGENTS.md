@@ -37,6 +37,10 @@ Do not say 무풍 등가, raw W to users.
 2. **Corrected power** (보정 파워)
 3. No recorded-power-only comparison
 
+## Heart rate (training intensity)
+
+**Intervals.icu LTHR 7 zones** — see [docs/glossary.md](docs/glossary.md). Use athlete **LTHR (bpm)** from Intervals; do not use Strava 5-zone HR, Garmin % max 5-zone, or Riduck **power** zones for HR labels. **Estimated power:** HR zones for “was today’s intensity right?”; power zones for app load only.
+
 ## Script
 
 ```bash

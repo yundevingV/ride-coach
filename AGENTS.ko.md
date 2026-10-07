@@ -36,6 +36,10 @@
 2. **보정 파워**
 3. 기록 파워 단독 비교 금지
 
+## 심박 (훈련 강도)
+
+**Intervals.icu LTHR 7존** — [docs/glossary.ko.md](docs/glossary.ko.md). **LTHR(bpm)** 는 Intervals 설정값. Strava 5존·가민 %맥스 5존·라이덕 **파워** 7존으로 심박 라벨 금지. **추정 파워** 라이더는 “오늘 강도” → **심박 우선**, 파워 존은 부하 참고.
+
 ## 스크립트
 
 ```bash

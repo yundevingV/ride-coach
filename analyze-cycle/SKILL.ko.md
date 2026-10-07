@@ -27,6 +27,8 @@ Strava MCP — `docs/setup-strava-mcp.ko.md`. MCP 없음 → `docs/manual-strava
 
 ❌ raw W, 무풍 등가 · `docs/glossary.ko.md`
 
+**심박:** 훈련 강도·Z2 판단 → **Intervals.icu LTHR 7존** (`docs/glossary.ko.md`). LTHR 미상 시 사용자에게 확인. ❌ 맥스 % 5존, Strava 5존, 라이덕 **파워** 7존으로 심박 설명.
+
 ## Workflow
 
 ```
@@ -37,7 +39,8 @@ Strava MCP — `docs/setup-strava-mcp.ko.md`. MCP 없음 → `docs/manual-strava
 - [ ] 4. scripts/segment-correct-power.mjs ← 필수 (**구간 최고 파워 + 세그먼트**)
 - [ ] 4b. (선택) **같은 라이드** `.fit`(미밴드 자유 운동·워치) → `--fit` + `--max-hr` 등. FIT 없으면 kcal 생략. Strava 칼로리 필드 미사용.
 - [ ] 5. 스크립트 markdown 포함 — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
-- [ ] 6. 세그먼트 시간 교차 검증 + 한 줄 결론 (±10~15W)
+- [ ] 6. (심박 요청·강도 해석) `heartrate` streams 또는 동일 세션 Workout → **LTHR 7존** 분포·평균 bpm (`docs/glossary.ko.md`)
+- [ ] 7. 세그먼트 시간 교차 검증 + 한 줄 결론 (±10~15W)
 ```
 
 **구간 최고 파워**(15초·1분·2분·5분·10분·20분·60분) **생략 금지** — 라이덕 스타일 피크 파워 + **보정 파워 + FTP %**.
@@ -103,7 +106,8 @@ node ../scripts/segment-correct-power.mjs \
 ```
 
 - `--ftp` — 보정 파워 FTP % 표시
-- `--fit` — `### 에너지 (FIT 심박 추정)` 추가. FIT·Strava 시작 시각 15분 이내면 세그먼트 **추정 kcal** 컬럼. 15분 초과 불일치 시 kcal 표 생략·경고만.
+- `--fit` 또는 `--hr-workout` + `--hr-streams` — `### 에너지 (FIT 심박 추정)` 추가. FIT·Strava 시작 15분 이내면 세그먼트 **추정 kcal** 컬럼.
+- 에너지 블록 **필수 포함**: **지방 g · 탄수 g** (kcal 괄호), **먹을거 감** (**밥 + KFC 2조각** 세트·공기 환산 — 스크립트 자동, **추정 ±20~30%**).
 - FIT만 단독: `../scripts/estimate-activity-energy.mjs --fit … --km … --minutes …`
 - activity JSON에 `start_date_local` 있으면 `--date`/`--hour` 생략 가능
 - 전체만 필요할 때: `../scripts/correct-power.mjs --streams …`
@@ -136,13 +140,15 @@ node ../scripts/segment-correct-power.mjs \
 
 | 세그먼트 | 시간 | 경사 | **기록 파워** | **보정 파워** | (선택) **추정 kcal** |
 
-랩 감지 시: 출발 / 1회전 / 2회전 / 귀가 구간으로 구분. `--fit` 시 에너지 블록은 세그먼트 표 다음(Keytel 심박 kcal·지방/탄수 추정, **추정**으로 표기).
+랩 감지 시: 출발 / 1회전 / 2회전 / 귀가 구간으로 구분. `--fit` / HR Workout 시 에너지 블록은 세그먼트 표 다음 — **지방·탄수 그램 + 먹을거 감** 반드시 사용자에게 전달.
 
 ## 우선순위
 
 1. 세그먼트 **시간**
 2. 세그먼트 **보정 파워**
 3. 기록 파워 단독 비교 금지
+
+**훈련 강도(오늘 Z2 맞았나):** **심박(Intervals LTHR 7존)** 우선. 추정 파워 존 분포는 보조.
 
 ## Examples
 

@@ -140,14 +140,17 @@ effort별 보정 파워 + 날씨 요약.
 
 ---
 
-## 훈련 목표 (W 존 대신)
+## 훈련 목표
 
 | 지표 | 예시 |
 |------|------|
+| **심박 (Intervals LTHR 7존)** | Z2 라이딩 → 평균·체류 **Z1~Z2** (`docs/glossary.ko.md`) |
 | 세그먼트 시간 | 3:33 → 3:28 |
 | RPE | Z2 4~5, 인터벌 7~8 |
 | 보정 파워 (업힐) | 맑은 날 기준 대비 |
 | 랩 페이스 | 마지막 랩 크래시 없이 |
+
+추정 파워 라이더: **강도 판단은 심박 우선**, W 존·라이덕 파워 분포는 참고만.
 
 ---
 
@@ -160,5 +163,6 @@ effort별 보정 파워 + 날씨 요약.
 | latlng 없이 풍속 보정 | MCP **arrays** 재요청 → [manual-strava-data.ko.md](./manual-strava-data.ko.md) **GPS 없을 때** |
 | 평지 W로 FTP | 업힐 보정 파워만 |
 | PR 비교에 analyze-cycle | **compare-cycle** 사용 |
+| 심박을 맥스 %·라이덕 **파워** 존으로 설명 | **Intervals LTHR 7존** (`docs/glossary.ko.md`) |
 
 스킬 원본: `analyze-cycle/SKILL.ko.md`, `compare-cycle/SKILL.ko.md`

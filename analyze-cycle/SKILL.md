@@ -29,6 +29,8 @@ Strava MCP — `docs/setup-strava-mcp.md`. No MCP → `docs/manual-strava-data.m
 
 Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 
+**HR:** Training intensity / Z2 → **Intervals.icu LTHR 7 zones** (`docs/glossary.md`). Confirm LTHR if unknown. Do not use % max 5-zone, Strava 5-zone, or Riduck **power** 7 zones for HR.
+
 ## Workflow
 
 ```
@@ -39,7 +41,8 @@ Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 - [ ] 4. scripts/segment-correct-power.mjs  ← REQUIRED (segments + **peak power**)
 - [ ] 4b. (optional) User provides **same-ride** `.fit` (Mi Band free exercise, watch) → add `--fit PATH` + `--max-hr` (and `--age` / `--sex` / `--resting-hr` if known). No FIT → skip energy; do **not** use Strava calorie field.
 - [ ] 5. Paste script markdown — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
-- [ ] 6. Cross-validate segment time + one-line conclusion (±10~15W)
+- [ ] 6. (HR / intensity) `heartrate` streams or same-session Workout → **LTHR 7-zone** distribution (`docs/glossary.md`)
+- [ ] 7. Cross-validate segment time + one-line conclusion (±10~15W)
 ```
 
 **Never** skip **구간 최고 파워** (15초·1분·2분·5분·10분·20분·60분) — users expect Riduck-style peak table with **기록 파워 + 보정 파워 + FTP %**.
@@ -107,7 +110,8 @@ node ../scripts/segment-correct-power.mjs \
 
 - `--date` / `--hour` optional if `start_date_local` is in activity JSON
 - `--ftp` optional — shows **보정 파워 FTP %** in peak table
-- `--fit` — appends `### 에너지 (FIT 심박 추정)`; segment table adds **추정 kcal** when FIT start aligns with Strava (≤15 min). Mismatch (>15 min) → energy block shows skip warning only (no bogus kcal).
+- `--fit` or `--hr-workout` + `--hr-streams` — appends `### 에너지 (FIT 심박 추정)`; segment **추정 kcal** when start aligns (≤15 min).
+- Energy block must surface **fat g · carb g** and **rice bowl + 2 KFC pcs** meal equivalents (script-generated; ±20–30%).
 - Standalone FIT CLI: `../scripts/estimate-activity-energy.mjs --fit … --km … --minutes …`
 - `--format json` for structured output
 - Whole-ride summary only: `../scripts/correct-power.mjs --streams …`
@@ -143,13 +147,15 @@ Ride shorter than window → skip that row (script auto-filters).
 
 Grouped by section when script detects laps (출발 / 1회전 / 2회전 / 귀가).
 
-With `--fit`, add energy block after segments (Keytel HR kcal + fat/carb split; label as **추정**).
+With `--fit` / HR Workout, paste energy block after segments — **grams + food equivalents** required in user reply.
 
 ## Priority
 
 1. Segment **time**
 2. **Corrected power** per segment
 3. No recorded-power-only comparison
+
+**Training intensity (e.g. Z2):** **HR (Intervals LTHR 7)** first; estimated-power zone distribution is secondary.
 
 ## Examples
 

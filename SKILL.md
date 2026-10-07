@@ -52,6 +52,10 @@ Do not say 무풍 등가, raw W to users.
 3. Recorded power alone — forbidden
 4. State ±10~15W error
 
+## Heart rate
+
+**Intervals.icu LTHR 7 zones** for training intensity — `docs/glossary.md`. Estimated power riders: HR for Z2/compliance; do not conflate Riduck power zones with HR.
+
 ## Examples
 
 - "ride-coach recent segments" → analyze-cycle

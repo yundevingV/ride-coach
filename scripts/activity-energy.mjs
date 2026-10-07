@@ -118,6 +118,32 @@ export async function loadFit(path) {
   };
 }
 
+/** Strava Workout + heartrate streams (e.g. Mi Band synced without local .fit). */
+export function buildFitFromStravaHr(workoutActivity, streamsPayload) {
+  const data = streamsPayload.data ?? streamsPayload;
+  const time = data.time ?? [];
+  const hr = data.heartrate ?? [];
+  const startMs = activityStartMs(workoutActivity);
+  if (!startMs || !time.length || !hr.length) return null;
+  const records = [];
+  for (let i = 0; i < time.length; i++) {
+    if (hr[i] == null) continue;
+    records.push({ ts: startMs + time[i] * 1000, hr: hr[i] });
+  }
+  if (!records.length) return null;
+  const hrs = records.map((r) => r.hr);
+  return {
+    records,
+    session: {},
+    startMs,
+    minutes: (workoutActivity.moving_time ?? workoutActivity.elapsed_time ?? 0) / 60,
+    distanceKm: null,
+    avgHr: workoutActivity.average_heartrate ?? Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length),
+    maxHr: workoutActivity.max_heartrate ?? Math.max(...hrs),
+    deviceKcal: workoutActivity.calories ?? null,
+  };
+}
+
 export function activityStartMs(activity) {
   const s = activity.start_date ?? activity.start_date_local;
   return s ? new Date(s).getTime() : null;
@@ -199,6 +225,37 @@ export function segmentEnergyKcal(fit, activity, streams, effort, riderKg, age, 
   return est ? Math.round(est.totalKcal) : null;
 }
 
+/** 밥 1공기 + KFC 오리지널 2조각 — rough “먹을거 감” (not meal advice). */
+const RICE_BOWL = { kcal: 330, carbG: 55, fatG: 1 };
+const KFC_TWO = { kcal: 560, fatG: 30, carbG: 24 };
+const MEAL_KFC = {
+  kcal: RICE_BOWL.kcal + KFC_TWO.kcal,
+  fatG: RICE_BOWL.fatG + KFC_TWO.fatG,
+  carbG: RICE_BOWL.carbG + KFC_TWO.carbG,
+};
+
+/** Rough food anchors for “how much is that?” (not meal advice). */
+export function foodEquivalents(energy, lang) {
+  if (!energy || energy.skipped) return null;
+  const L = lang === 'en';
+  const { fatG, carbG, totalKcal: kcal } = energy;
+  const fmt = (n) => (n >= 10 ? Math.round(n) : n.toFixed(1));
+  const meal = MEAL_KFC;
+  const mealLabel = L ? '1 rice bowl + 2 KFC Original pcs' : '밥 1공기 + KFC 2조각';
+  if (L) {
+    return {
+      fat: `${fmt(fatG)} g fat ≈ **${fmt(fatG / KFC_TWO.fatG)}×** (2 KFC pcs fat, ~${KFC_TWO.fatG} g)`,
+      carb: `${fmt(carbG)} g carb ≈ **${fmt(carbG / RICE_BOWL.carbG)} rice bowls** (~${RICE_BOWL.carbG} g/bowl)`,
+      kcal: `**${Math.round(kcal)} kcal** ≈ **${fmt(kcal / meal.kcal)}× ${mealLabel}** (~${meal.kcal} kcal/set)`,
+    };
+  }
+  return {
+    fat: `지방 **${fmt(fatG)} g** ≈ KFC **2조각** **${fmt(fatG / KFC_TWO.fatG)}회** 분량(지방 ~${KFC_TWO.fatG}g)`,
+    carb: `탄수 **${fmt(carbG)} g** ≈ 밥 **${fmt(carbG / RICE_BOWL.carbG)}공기** (~${RICE_BOWL.carbG}g/공기)`,
+    kcal: `**${Math.round(kcal)} kcal** ≈ **${mealLabel} ${fmt(kcal / meal.kcal)}세트** (~${meal.kcal} kcal/세트)`,
+  };
+}
+
 export function formatEnergyMarkdown(energy, lang) {
   if (!energy) return '';
   const L = lang === 'en';
@@ -228,12 +285,23 @@ export function formatEnergyMarkdown(energy, lang) {
   }
   lines.push(
     `| **${L ? 'Total' : '추정 총 소모'}** | **${Math.round(energy.totalKcal)} kcal** |`,
-    `| ${L ? 'Fat' : '지방'} | ${Math.round(energy.fatKcal)} kcal ≈ ${energy.fatG.toFixed(1)} g |`,
-    `| ${L ? 'Carbohydrate' : '탄수화물'} | ${Math.round(energy.carbKcal)} kcal ≈ ${energy.carbG.toFixed(1)} g |`,
+    `| **${L ? 'Fat' : '지방'}** | **${energy.fatG.toFixed(1)} g** (${Math.round(energy.fatKcal)} kcal) |`,
+    `| **${L ? 'Carbohydrate' : '탄수화물'}** | **${energy.carbG.toFixed(1)} g** (${Math.round(energy.carbKcal)} kcal) |`,
     `| ${L ? 'Fat share' : '지방 비율'} | ${(energy.fatFrac * 100).toFixed(0)}% |`,
   );
   if (energy.deviceKcal != null) {
     lines.push(`| ${L ? 'Device (FIT)' : '기기(FIT)'} | ${energy.deviceKcal} kcal |`);
+  }
+  const food = foodEquivalents(energy, lang);
+  if (food) {
+    lines.push(
+      '',
+      L ? '**Food equivalents (rough)**' : '**먹을거 감 (대략, ±많음)**',
+      '',
+      `- ${food.fat}`,
+      `- ${food.carb}`,
+      `- ${food.kcal}`,
+    );
   }
   if (energy.fitStartDeltaMin != null && Math.abs(energy.fitStartDeltaMin) > 15) {
     lines.push(

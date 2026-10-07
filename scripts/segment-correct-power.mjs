@@ -20,6 +20,7 @@ import {
   summarize,
 } from './power-lib.mjs';
 import {
+  buildFitFromStravaHr,
   buildRideEnergy,
   formatEnergyMarkdown,
   loadFit,
@@ -225,7 +226,11 @@ async function main() {
   const restingHr = Number(args['resting-hr'] ?? 60);
 
   let fit = null;
-  if (args.fit) {
+  if (args['hr-workout'] && args['hr-streams']) {
+    const workout = JSON.parse(await readFile(args['hr-workout'], 'utf8'));
+    const hrRaw = JSON.parse(await readFile(args['hr-streams'], 'utf8'));
+    fit = buildFitFromStravaHr(workout, hrRaw);
+  } else if (args.fit) {
     fit = await loadFit(args.fit);
   }
 

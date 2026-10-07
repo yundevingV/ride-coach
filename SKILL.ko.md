@@ -52,6 +52,10 @@ Strava + Open-Meteo **세그먼트·코스·파워** 분석 허브.
 3. 기록 파워 단독 비교 **금지**
 4. 추정 파워 ±10~15W 명시
 
+## 심박
+
+**Intervals.icu LTHR 7존** — `docs/glossary.ko.md`. 추정 파워는 **훈련 강도·Z2** 는 **심박** 기준; 라이덕 **파워** 존과 혼동 금지.
+
 ## Examples
 
 - "ride-coach 최근 세그먼트" → analyze-cycle

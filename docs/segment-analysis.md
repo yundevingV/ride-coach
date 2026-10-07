@@ -140,14 +140,17 @@ Heuristic fallback (no streams) → `analyze-cycle/SKILL.md`.
 
 ---
 
-## Training goals (instead of W zones)
+## Training goals
 
 | Metric | Example |
 |--------|---------|
+| **HR (Intervals LTHR 7 zones)** | Z2 ride → time in **Z1–Z2** (`docs/glossary.md`) |
 | Segment time | 3:33 → 3:28 |
 | RPE | Z2 4~5, intervals 7~8 |
 | Corrected power (climb) | vs dry-day baseline |
 | Lap pace | No crash on final lap |
+
+Estimated power: **HR first** for intensity; W / Riduck power zones are secondary.
 
 ---
 
@@ -160,5 +163,6 @@ Heuristic fallback (no streams) → `analyze-cycle/SKILL.md`.
 | Wind correction without latlng | Retry MCP **arrays** → [manual-strava-data.md](./manual-strava-data.md) **When GPS is missing** |
 | FTP from flat W | Uphill corrected W only |
 | PR compare with analyze-cycle | Use **compare-cycle** |
+| HR via % max or Riduck **power** zones | **Intervals LTHR 7 zones** (`docs/glossary.md`) |
 
 Skill sources: `analyze-cycle/SKILL.md`, `compare-cycle/SKILL.md`
