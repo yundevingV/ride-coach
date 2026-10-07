@@ -346,3 +346,26 @@ export function formatPeakTable(peaks, lang, ftp = null) {
   });
   return [h, sep, ...rows].join('\n');
 }
+
+/** Intervals.icu LTHR 7 zones */
+export function hrZoneLthr(bpm, lthr) {
+  const p = bpm / lthr;
+  if (p < 0.81) return 'Z1';
+  if (p < 0.9) return 'Z2';
+  if (p < 0.94) return 'Z3';
+  if (p < 1.0) return 'Z4';
+  if (p < 1.03) return 'Z5';
+  if (p < 1.07) return 'Z6';
+  return 'Z7';
+}
+
+/** Intervals / Coggan 7 zones (% FTP) */
+export function powerZoneFtp(w, ftp) {
+  if (w < 0.56 * ftp) return 'Z1';
+  if (w < 0.76 * ftp) return 'Z2';
+  if (w < 0.91 * ftp) return 'Z3';
+  if (w < 1.06 * ftp) return 'Z4';
+  if (w < 1.21 * ftp) return 'Z5';
+  if (w < 1.51 * ftp) return 'Z6';
+  return 'Z7';
+}

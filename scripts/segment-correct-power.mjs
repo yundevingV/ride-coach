@@ -9,6 +9,7 @@ import {
   CRR_DRY,
   CRR_WET,
   LOSS,
+  buildCorrectedSeries,
   buildPointsFromSlice,
   computePeakPowers,
   fetchWeather,
@@ -22,7 +23,9 @@ import {
 import {
   buildFitFromStravaHr,
   buildRideEnergy,
+  computeMovingIntensityZones,
   formatEnergyMarkdown,
+  formatIntensityMarkdown,
   loadFit,
   segmentEnergyKcal,
 } from './activity-energy.mjs';
@@ -162,6 +165,10 @@ function formatMarkdown(out, lang) {
     );
   }
 
+  if (out.intensity) {
+    lines.push(formatIntensityMarkdown(out.intensity, lang));
+  }
+
   const order = ['warmup', 'lap1', 'lap2', 'return', 'other'];
   const withKcal = Boolean(out.energy?.fitAligned && !out.energy?.skipped);
   for (const sec of order) {
@@ -268,6 +275,20 @@ async function main() {
       })
     : null;
 
+  const lthr = args.lthr ? Number(args.lthr) : null;
+  let intensity = null;
+  if (ftp && lthr) {
+    const series = buildCorrectedSeries(streams, weather, massKg);
+    intensity = computeMovingIntensityZones({
+      ...series,
+      velocity: streams.velocity_smooth,
+      fit,
+      activity,
+      lthr,
+      ftp,
+    });
+  }
+
   const surface = (weather.precipDayMm ?? 0) > 5 ? 'wet' : 'dry';
   const out = {
     activityId: activity.id,
@@ -284,6 +305,7 @@ async function main() {
     ftp,
     segments,
     energy,
+    intensity,
   };
 
   if (format === 'json') {

@@ -40,6 +40,9 @@ Strava MCP — `docs/setup-strava-mcp.ko.md`. MCP 없음 → `docs/manual-strava
 - [ ] 4b. (선택) **같은 라이드** `.fit`(미밴드 자유 운동·워치) → `--fit` + `--max-hr` 등. FIT 없으면 kcal 생략. Strava 칼로리 필드 미사용.
 - [ ] 5. 스크립트 markdown 포함 — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
 - [ ] 6. (심박 요청·강도 해석) `heartrate` streams 또는 동일 세션 Workout → **LTHR 7존** 분포·평균 bpm (`docs/glossary.ko.md`)
+- [ ] 6b. **프로필** — 있으면 `profile/athlete.local.json`에서 **보정 FTP(`zones.ftpW` 또는 `power.recommendedFtpW`)**, **LTHR** 로드. `--ftp`는 프로필 값 사용 (Strava 프로필 FTP 그대로 쓰지 않음).
+- [ ] 6c. **심박·파워 존 블록 필수** — `segment-correct-power.mjs`에 `--lthr` + `--ftp` (프로필). 스크립트 `### 훈련 강도 (주행 중 체류)` (**정차·신호등 제외**, 체류 % 우선; 전체 평균 bpm/W는 보조만). 강도 판단 **심박 체류 우선**.
+- [ ] 6d. **에너지 블록 생략 금지** — `--hr-workout`/`--fit` 있으면 `### 에너지` 전체( kcal · 지방/탄수 g · 먹을거 감) 사용자에게 **반드시** 전달. 예시 요약에서 빼지 않음.
 - [ ] 7. 세그먼트 시간 교차 검증 + 한 줄 결론 (±10~15W)
 ```
 
@@ -129,6 +132,13 @@ node ../scripts/segment-correct-power.mjs \
 | 15초 / 1분 / 2분 / 5분 / 10분 / 20분 / 60분 |
 
 라이딩이 짧으면 해당 구간 생략 (스크립트 자동).
+
+### 훈련 강도 · 에너지 (필수)
+
+- `--lthr` `--ftp` → 스크립트가 **주행 중 체류 %** 출력 (속도 &lt; 0.5 m/s 제외).
+- HR Workout/FIT → `### 에너지` 블록 **항상** 붙여넣기.
+
+**해석:** Z2 목표 라이드 → **심박 체류 Z1~Z2**가 맞으면 OK. 평균 심박은 신호 대기로 왜곡될 수 있음.
 
 ### 해석
 - 랩/회전 시간 diff (해당 시)

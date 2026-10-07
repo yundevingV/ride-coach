@@ -3,6 +3,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
+import { hrZoneLthr, powerZoneFtp } from './power-lib.mjs';
 
 export function kcalPerMinFromHr({ hr, weightKg, age, sex }) {
   const w = Number(weightKg);
@@ -154,6 +155,122 @@ export function avgHrInWindow(records, startMs, endMs) {
   const inWin = records.filter((r) => r.ts >= startMs && r.ts <= endMs);
   if (!inWin.length) return null;
   return Math.round(inWin.reduce((a, r) => a + r.hr, 0) / inWin.length);
+}
+
+function hrNearest(records, tsMs) {
+  if (!records?.length) return null;
+  let best = records[0];
+  let bestD = Math.abs(records[0].ts - tsMs);
+  for (const r of records) {
+    const d = Math.abs(r.ts - tsMs);
+    if (d < bestD) {
+      best = r;
+      bestD = d;
+    }
+  }
+  return bestD <= 5000 ? best.hr : null;
+}
+
+const ZONE_KEYS = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7'];
+
+function pctFromCounts(counts) {
+  const total = ZONE_KEYS.reduce((s, z) => s + (counts[z] ?? 0), 0);
+  const pct = {};
+  for (const z of ZONE_KEYS) pct[z] = total ? Math.round((100 * (counts[z] ?? 0)) / total) : 0;
+  return { pct, samples: total };
+}
+
+/** Zone dwell while moving (excludes stops / traffic lights). */
+export function computeMovingIntensityZones({
+  corrected,
+  recorded,
+  timeSec,
+  velocity,
+  fit,
+  activity,
+  lthr,
+  ftp,
+  minVelocity = 0.5,
+}) {
+  if (!corrected?.length || !ftp || !lthr) return null;
+  const actStart = activityStartMs(activity);
+  const hrCounts = Object.fromEntries(ZONE_KEYS.map((z) => [z, 0]));
+  const pwCounts = Object.fromEntries(ZONE_KEYS.map((z) => [z, 0]));
+  let idle = 0;
+  let sumHr = 0;
+  let nHr = 0;
+  let sumPw = 0;
+  let nPw = 0;
+
+  for (let i = 0; i < corrected.length; i++) {
+    const v = velocity?.[i] ?? 0;
+    if (v < minVelocity) {
+      idle++;
+      continue;
+    }
+    const pw = corrected[i] ?? 0;
+    if (pw >= 20) {
+      pwCounts[powerZoneFtp(pw, ftp)]++;
+      sumPw += pw;
+      nPw++;
+    }
+    if (fit?.records?.length && actStart != null && timeSec?.[i] != null) {
+      const hr = hrNearest(fit.records, actStart + timeSec[i] * 1000);
+      if (hr != null && hr > 40) {
+        hrCounts[hrZoneLthr(hr, lthr)]++;
+        sumHr += hr;
+        nHr++;
+      }
+    }
+  }
+
+  const hrD = pctFromCounts(hrCounts);
+  const pwD = pctFromCounts(pwCounts);
+  const totalSamples = corrected.length;
+  return {
+    ftp,
+    lthr,
+    minVelocity,
+    idlePct: totalSamples ? Math.round((100 * idle) / totalSamples) : 0,
+    hr: { ...hrD, counts: hrCounts, avgMoving: nHr ? Math.round(sumHr / nHr) : null },
+    power: { ...pwD, counts: pwCounts, avgMovingCorrected: nPw ? Math.round(sumPw / nPw) : null },
+  };
+}
+
+function formatZonePctLine(pct, lang) {
+  return ZONE_KEYS.map((z) => `${z} ${pct[z] ?? 0}%`).join(' · ');
+}
+
+export function formatIntensityMarkdown(intensity, lang) {
+  if (!intensity) return '';
+  const L = lang === 'en';
+  const lines = [
+    L ? '### Training intensity (moving time)' : '### 훈련 강도 (주행 중 체류)',
+    '',
+    L
+      ? `_Stops excluded: speed < ${intensity.minVelocity} m/s (${intensity.idlePct}% of samples). **Dwell %** over moving time — not whole-ride average._`
+      : `_정차 제외: 속도 < ${intensity.minVelocity} m/s (${intensity.idlePct}% 샘플). **체류 %**는 주행 중만 — 전체 평균 bpm/W로 강도 판단하지 않음._`,
+    '',
+    `| | |`,
+    `|---|---|`,
+    `| ${L ? 'FTP (corrected)' : 'FTP (보정)'} | **${intensity.ftp} W** |`,
+    `| LTHR | **${intensity.lthr} bpm** |`,
+    '',
+  ];
+  if (intensity.hr.samples) {
+    lines.push(
+      `| ${L ? 'HR dwell (moving)' : '심박 체류 (주행 중)'} | ${formatZonePctLine(intensity.hr.pct, lang)} |`,
+      `| ${L ? 'Avg HR (moving only)' : '평균 심박 (주행 중만)'} | ${intensity.hr.avgMoving ?? '—'} bpm |`,
+    );
+  }
+  if (intensity.power.samples) {
+    lines.push(
+      `| ${L ? 'Corrected W dwell' : '보정 파워 체류'} | ${formatZonePctLine(intensity.power.pct, lang)} |`,
+      `| ${L ? 'Avg corrected W (moving)' : '평균 보정 파워 (주행 중)'} | ${intensity.power.avgMovingCorrected ?? '—'} W |`,
+    );
+  }
+  lines.push('');
+  return lines.join('\n');
 }
 
 export function fitStravaStartDeltaMin(fit, activity) {

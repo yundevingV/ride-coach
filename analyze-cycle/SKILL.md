@@ -42,6 +42,9 @@ Do not say raw W, zero-wind, 무풍 등가. `docs/glossary.md`.
 - [ ] 4b. (optional) User provides **same-ride** `.fit` (Mi Band free exercise, watch) → add `--fit PATH` + `--max-hr` (and `--age` / `--sex` / `--resting-hr` if known). No FIT → skip energy; do **not** use Strava calorie field.
 - [ ] 5. Paste script markdown — **구간 최고 파워 표 + 세그먼트 표** 생략 금지
 - [ ] 6. (HR / intensity) `heartrate` streams or same-session Workout → **LTHR 7-zone** distribution (`docs/glossary.md`)
+- [ ] 6b. **Profile** — if present, load corrected FTP + LTHR from `profile/athlete.local.json`; `--ftp` from profile (not Strava FTP by default).
+- [ ] 6c. **Training intensity** — `--lthr` + `--ftp`; script prints **moving-time dwell %** (excludes stops). Verdict: **HR dwell first**, not whole-ride averages.
+- [ ] 6d. **Energy block** — never omit `### 에너지` (kcal, fat/carb g, food equivalents) when `--hr-workout` / `--fit` is used.
 - [ ] 7. Cross-validate segment time + one-line conclusion (±10~15W)
 ```
 
@@ -134,6 +137,12 @@ Copy script output, then add ride header + conclusion:
 | 15초 / 1분 / 2분 / 5분 / 10분 / 20분 / 60분 |
 
 Ride shorter than window → skip that row (script auto-filters).
+
+### Training intensity (mandatory — HR + power zones)
+
+Reference: **corrected FTP** *F* W, **LTHR** *T* bpm from `profile/athlete.local.json` or user. Power = Intervals/Coggan 7 (% FTP); HR = Intervals LTHR 7.
+
+Include ride avg, time-in-zone (HR streams), whole-ride and peak **corrected** W → zone label. No HR → power zones only; no profile → ask user for FTP/LTHR.
 
 ### 해석
 - 2회전/랩 시간 diff (if applicable)
